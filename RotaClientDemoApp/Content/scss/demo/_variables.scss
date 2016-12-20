@@ -1,0 +1,37 @@
+﻿
+//active control
+$active-control-bg: #fbe9d1;
+$sub-header-bg: #b10c4b;
+//sub-header
+$demo-sub-header-main-bg: rgba(255, 255, 255, 0.22);
+$sub-header-border-bottom: 1px solid #ccc;
+$sub-header-title-bg: $demo-sub-header-main-bg;
+$sub-header-border-bottom-color: transparent;
+//current company
+$sub-header-company-bg: $demo-sub-header-main-bg;
+//badges
+$badge-danger-bg: $demo-sub-header-main-bg;
+$badge-info-bg: $demo-sub-header-main-bg;
+$badge-success-bg: $demo-sub-header-main-bg;
+$badge-warning-bg: $demo-sub-header-main-bg;
+
+//modal
+$modal-header-bg-color: #feecf3;
+$modal-header-color: #c40950;
+//navbar
+$navbar-default-bg: #E40A5D;
+$navbar-default-link-color: #fff;
+$navbar-default-link-hover-color: #fff;
+$navbar-default-link-hover-bg: transparent !default;
+$navbar-default-link-active-color: #fff !default;
+//dropdown
+$dropdown-bg: #c40950;
+$dropdown-border: #c40950;
+$dropdown-link-color: #fff;
+$dropdown-link-hover-color: #E40A5D;
+$dropdown-link-hover-bg: #fff;
+//breadcrumbs
+$breadcrumb-bg: rgba(255, 255, 255, 0.22);
+$breadcrumb-padding-vertical: 4px;
+$breadcrumb-color: #fff;
+

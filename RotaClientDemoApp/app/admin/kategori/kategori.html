@@ -1,0 +1,27 @@
+﻿<rt-form>
+    <rt-crud-buttons></rt-crud-buttons>
+    <rt-panel title="Kategori" icon="open-folder-o" color="warning">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label col-md-3">Kategori</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" ng-model="vm.model.kategoriAdi"
+                               required rt-callout rt-text-case="title" rt-focus="vm.isNew" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label col-md-3">Üst Kategori</label>
+                    <div class="col-md-9">
+                        <rt-select ng-model="vm.model.ustKategoriId"
+                                   on-fetch="vm.kategoriApi.listeyiAl()"
+                                   value-prop="id"
+                                   display-prop="kategoriAdi"></rt-select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </rt-panel>
+</rt-form>

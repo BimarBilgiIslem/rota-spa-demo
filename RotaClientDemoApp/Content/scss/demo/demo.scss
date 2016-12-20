@@ -1,0 +1,95 @@
+﻿@import "variables";
+@import "../rota/rota";
+
+
+.navbar-brand {
+    padding: 6px 8px;
+}
+
+.stokKodu {
+    position: relative;
+
+    span {
+        position: absolute;
+        top: 6px;
+        left: 5px;
+    }
+}
+
+.kritikStokMiktari {
+    color: #d83434;
+
+    .ui-grid-cell {
+        background-color: #efdede !important;
+    }
+}
+
+a.sepetim {
+    display: inline-block;
+    font-size: 1.4em;
+    text-decoration: underline;
+    margin-top: 21px;
+
+    &:hover, &:visited {
+        color: #fff;
+    }
+}
+
+.vitrin {
+    .urun {
+        border: 1px solid #968e8e;
+        margin: 15px;
+        width: 19%;
+        box-sizing: content-box;
+        transition: all .3s;
+        transform: scale(1,1);
+        position: relative;
+        overflow: hidden;
+        height: 400px;
+        background: rgba(10, 10, 10, 0.65);
+        padding-top: 12px;
+
+        button {
+            margin: 5px 0 5px 0;
+        }
+
+        &:hover {
+            transform: scale(1.1,1.1);
+            border-color: #58a4d7;
+        }
+
+        a {
+            color: #fff;
+        }
+
+        .tukenmekUzere {
+            position: absolute;
+            top: -29px;
+            left: -92px;
+            color: #f9f9f9;
+            font-size: .95em;
+            padding: 15px;
+            width: 100%;
+            height: 85px;
+            background: rgba(19, 3, 3, 0.58);
+            transform: rotate(-45deg);
+            padding-top: 55px;
+            padding-right: 43px;
+        }
+    }
+}
+
+.header-labels {
+    background: rgba(16, 16, 16, 0.33);
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+}
+
+#sub-header {
+    .title {
+        letter-spacing: 2px;
+        font-size: 1.6em;
+        text-shadow: none;
+    }
+}

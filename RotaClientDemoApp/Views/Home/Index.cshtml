@@ -1,0 +1,85 @@
+﻿@using RotaClientDemoApp.Helper
+@{
+    Layout = null;
+    var debugging = !Html.IsReleaseBuild();
+}
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html>
+<!--<![endif]-->
+<head>
+    <!--Meta Bilgileri-->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="Bimar">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    @if (debugging)
+    {
+        <link href="~/Content/css/site.css" rel="stylesheet" />
+    }
+    else
+    {
+        <link href="~/Content/css/index.min.css" rel="stylesheet" />
+    }
+
+    <title ng-bind-template="{{appTitle}}"></title>
+</head>
+<body>
+    @*Infinite progress bar*@
+    <div class="text-center" id="progressBar">
+        <div class="progress center-block" style="width: 400px; margin-top: 250px;">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%;">
+                <span>
+                    Loading...
+                </span>
+            </div>
+        </div>
+    </div>
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
+    <!--shell page-->
+    <ui-view name="shell"></ui-view>
+    <!--global environment-->
+    <script>
+        (function(w) {
+            var appVersion = "@Html.GetSetting("appVersion", "1.0.0")",
+                debugging = "@debugging" === "True",
+                enableJsCaching = @Html.GetSetting("enableJsCaching", "true");
+
+            var globalSettings = {
+                appVersion: appVersion,
+                debugging: debugging,
+                cacheBusting: enableJsCaching ? ("v=" + (debugging ? (new Date()).getTime() : appVersion)) : undefined,
+                clientId: "@Html.GetSetting("clientId")",
+                authority: "@Html.GetSetting("authority")",
+                allowAnonymousAccess: @Html.GetSetting("allowAnonymousAccess", "true"),
+                elmahLoggingEnabled: @Html.GetSetting("elmahLoggingEnabled", "false"),
+                reportViewerUrl: "@Html.GetSetting("reportViewerUrl")",
+                reportControllerUrl: "@Html.GetSetting("reportControllerUrl")",
+                showModelDebugPanel: @Html.GetSetting("showModelDebugPanel", "false")
+            }; //caching
+            //Export
+            w.__globalEnvironment = w.__globalEnvironment || globalSettings;
+        })(this);
+    </script>
+
+    @if (debugging)
+    {
+        <script src="~/app/rota/core/require.js" data-main="/app/rota/config/main"></script>
+    }
+    else
+    {
+        <script src="~/dist/rota/core/require.js" data-main="/dist/rota/config/main"></script>
+    }
+</body>
+</html>

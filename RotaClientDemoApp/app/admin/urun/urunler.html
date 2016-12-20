@@ -1,0 +1,50 @@
+﻿<rt-list-buttons></rt-list-buttons>
+<rt-panel title="Filter" icon="filter" color="info">
+    <rt-form>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label col-md-3">Ürün Adi</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" ng-model="vm.filter.urunAdi" rt-focus />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label col-md-3">Kodu</label>
+                    <div class="col-md-9">
+                        <input type="text" class="form-control" ng-model="vm.filter.kodu" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label class="control-label col-md-3">Kodu</label>
+                    <div class="col-md-9">
+                        <rt-select ng-model="vm.filter.kategoriId"
+                                   on-fetch="vm.kategoriApi.listeyiAl()"
+                                   value-prop="id"
+                                   display-prop="kategoriAdi"></rt-select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </rt-form>
+</rt-panel>
+<rt-grid></rt-grid>
+
+<script id="contextmenu.html" type="text/ng-template">
+    <ul class="contextmenu">
+        <li>
+            <a href ng-click="grid.appScope.vm.goToDetailState(row.entity.id)">
+                <i class="fa fa-edit"></i> Detay
+            </a>
+        </li>      
+        <li>
+            <a href ng-click="grid.appScope.vm.initDeleteModel(row.entity.id)">
+                <i class="fa fa-trash"></i> Sil
+            </a>
+        </li>
+    </ul>
+</script>

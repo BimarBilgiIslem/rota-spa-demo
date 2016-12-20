@@ -1,0 +1,29 @@
+﻿<div class="rota-modal">
+    <div class="modal-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#Urun</th>
+                    <th>#Adet</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="urun in vm.params.sepetim">
+                    <td><a ui-sref="shell.content.urun({id:urun.urunId})" ng-click="vm.closeModal()">{{urun.urunAdi}}</a></td>
+                    <td>{{urun.adet}}</td>
+                    <td>
+                        <a href>
+                            <i class="fa fa-trash-o"></i>
+                            Sil
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" ng-click="vm.closeModal()">Alışverişe devam et</button>
+        <button class="btn btn-primary" ng-click="vm.closeModal()">Hemen Satin Al</button>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+define(["require", "exports", "./rtMenu", "./rtSpinner", "./rtGrid", "./rtPanel", "./rtForm", "./rtButton", "./rtListButtons", "./rtCrudButtons", "./rtI18n", "./rtFocus", "./rtSelect", "./rtMultiSelect", "./rtEditor", "./rtNumber", "./rtDatePicker", "./rtDateRange", "./rtTabs", "./rtTextCase", "./rtFileUpload", "./rtMultiFileUpload", "./rtInclude", "./rtReportButtons", "./rtTree", "./rtDraggableModal", "./rtCallout", "./rtValidator"], function (require, exports) {
+    "use strict";
+    angular.module('rota.directives', ['rota.directives.rtmenu',
+        'rota.directives.rtspinner',
+        'rota.directives.rtgrid',
+        'rota.directives.rtpanel',
+        'rota.directives.rtbutton',
+        'rota.directives.rtform',
+        'rota.directives.rtlistbuttons',
+        'rota.directives.rtI18n',
+        'rota.directives.rtcrudbuttons',
+        'rota.directives.rtfocus',
+        'rota.directives.rtselect',
+        'rota.directives.rtmultiselect',
+        'rota.directives.rteditor',
+        'rota.directives.rtnumber',
+        'rota.directives.rtdatepicker',
+        'rota.directives.rtdaterange',
+        'rota.directives.rttabs',
+        'rota.directives.rttextcase',
+        'rota.directives.rtfileupload',
+        'rota.directives.rtmultifileupload',
+        'rota.directives.rtinclude',
+        'rota.directives.rtreportbuttons',
+        'rota.directives.rttree',
+        'rota.directives.rtdraggablemodal',
+        'rota.directives.rtcallout',
+        'rota.directives.rtvalidator'
+    ]);
+});

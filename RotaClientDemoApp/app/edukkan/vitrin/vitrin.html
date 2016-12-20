@@ -1,0 +1,43 @@
+﻿<rt-form>
+    <div class="container">
+        <div class="row">
+            <div class="pull-left">
+                <h2 class="header-labels">Sitemize hoşgeldiniz.. :)</h2>
+            </div>
+            <div class="pull-right">
+                <a class="sepetim header-labels" href ng-click="vm.sepetiGoster()">
+                    <i class="fa fa-shopping-cart"></i>
+                    Sepetim - Toplam {{vm.vitrinApi.sepetim.length}} ürün
+                </a>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="row text-center vitrin">
+            <div class="col-md-4 urun" ng-repeat="urun in vm.urunler" ng-init="adet=1">
+                <img class="img-rounded img-responsive" alt="" ngf-src="urun.urunResmi" />
+                <hr />
+                <a ui-sref="shell.content.urun({id:urun.id})">{{urun.urunAdi}}</a>
+                <hr />
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="input-group">
+                            <span class="input-group-addon">Adet</span>
+                            <input type="number" class="form-control" ng-model="adet" />
+                            <span class="input-group-addon">
+                                Stok Adedi
+                                {{urun.stokMiktari}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tukenmekUzere" ng-show="vm.urunApi.minStokMiktari>=urun.stokMiktari">
+                    Tükenmek Üzere
+                </div>
+                <button class="btn btn-block btn-primary" ng-click="vm.sepeteEkle(urun,adet)">
+                    <i class="fa fa-shopping-cart"></i>
+                    Sepete Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+</rt-form>

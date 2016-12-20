@@ -1,0 +1,22 @@
+﻿<rt-form>
+    <div class="rt-modal">
+        <div class="modal-header">
+            <h4>
+                <i class="fa fa-calendar-o"></i>
+                Kategori ekle
+            </h4>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label col-md-3">Kategori Adi</label>
+                <div class="col-md-9">
+                    <input type="text" class="form-control" rt-focus ng-model="vm.model.kategoriAdi" />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default btn-sm" ng-click="vm.closeModal()">İptal</button>
+            <button class="btn btn-primary btn-sm" ng-click="vm.modalResult(vm.kategoriApi.save(vm.model))">Kategori Ekle</button>
+        </div>
+    </div>
+</rt-form>

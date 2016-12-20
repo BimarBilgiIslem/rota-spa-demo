@@ -1,0 +1,5 @@
+﻿define({
+    kategori: {
+        kategoriAdi: 'Category'
+    }
+});

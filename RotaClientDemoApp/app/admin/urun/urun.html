@@ -1,0 +1,151 @@
+﻿<rt-form>
+    <div class="pull-left"><rt-crud-buttons></rt-crud-buttons></div>
+    <div class="pull-right">
+        <button class="btn btn-sm outline btn-primary" ng-click="vm.minStokMiktariniDegistir()">
+            <i class="fa fa-adjust"></i>
+            Min Stok miktarını değiştir
+        </button>
+    </div>
+    <div class="clearfix"></div>
+    <rt-panel title="Urun Detayi" icon="diamond" color="{{vm.stokDurumuPanelBg}}">
+        <rt-header>
+            <h3 class="panel-title pull-left"> <i class="fa fa-shopping-cart"></i> Ürün Detayı</h3>
+            <div class="pull-right text-danger" ng-show="vm.model.stokMiktari<=vm.urunApi.minStokMiktari" ng-if="!vm.isNew">
+                <span class="badge">
+                    <i class="fa fa-arrow-down"></i> Kritik stok miktarı
+                </span>
+            </div>
+            <div class="clearfix"></div>
+        </rt-header>
+        <div class="col-md-3">
+            <img class="img-thumbnail" alt="" ngf-src="vm.model.urunResmi" />
+            <div class="margin-top-5">
+                <a href ng-click="vm.urunResmiYukle()" ng-show="vm.model.urunResmi===vm.defaultImgUri">
+                    <i class="fa fa-picture-o"></i> Ürün resmi ekle
+                </a>
+                <a href ng-click="vm.urunResmiSil()" ng-hide="vm.model.urunResmi===vm.defaultImgUri" class="text-danger">
+                    <i class="fa fa-times"></i> Ürün resmini sil
+                </a>
+                <div class="pull-right" ng-hide="vm.model.urunResmi===vm.defaultImgUri">
+                    <a href ng-click="vm.buyukResim()" uib-tooltip="Büyük resim">
+                        <i class="fa fa-search"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9" style="border-left: 1px solid #ccc">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Kodu</label>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" ng-model="vm.model.kodu" rt-callout required rt-validator="urunKoduKontrolu"
+                                   rt-focus="vm.isNew" ng-disabled="!vm.isNew" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Ürün Adi</label>
+                        <div class="col-md-9">
+                            <input type="text" rt-callout name="urunAdi" class="form-control" ng-model="vm.model.urunAdi" required rt-text-case="title" ng-maxlength="50"
+                                   uib-popover="Max 50 karakter" popover-trigger="'focus'" popover-placement="right" popover-append-to-body="true" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Kategori</label>
+                        <div class="col-md-8">
+                            <rt-select ng-model="vm.model.kategoriId"
+                                       on-fetch="vm.kategoriApi.listeyiAl()"
+                                       on-change="vm.altKatgorileriYukle(args)"
+                                       value-prop="id"
+                                       fire-onchange
+                                       required
+                                       rt-callout
+                                       display-prop="kategoriAdi"
+                                       new-item-options="vm.yeniKategoriModalAyarlari"></rt-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Birim Fiyat</label>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" rt-callout rt-number="2" min-value="0" ng-model="vm.model.birimFiyat" />
+                                <span class="input-group-addon">TL</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Alt Kategori</label>
+                        <div class="col-md-8">
+                            <rt-select ng-model="vm.model.altKategoriId"
+                                       items="vm.altKategoriler"
+                                       value-prop="id"
+                                       display-prop="kategoriAdi"></rt-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Stok Miktarı</label>
+                        <div class="col-md-5" uib-tooltip="Kritik stok miktarı 10 dur" tooltip-placement="bottom">
+                            <div class="input-group">
+                                <input type="number" class="form-control" ng-model="vm.model.stokMiktari" />
+                                <span class="input-group-addon">Adet</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="control-label col-md-4">Yayınlanma tarihi</label>
+                        <div class="col-md-8">
+                            <rt-date-picker ng-model="vm.model.yayinlanmaTarihi" min-date="vm.minYayinlanmaTarihi"
+                                            rt-callout date-format="time"></rt-date-picker>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">İlişkili Ürünler</label>
+                        <div class="col-md-10">
+                            <rt-multi-select ng-model="vm.model.iliskiliUrunler"
+                                             on-fetch="vm.urunApi.getList()"
+                                             model-prop="iliskiliUrunId"
+                                             value-prop="id"
+                                             on-add="vm.urunKategoriUyumKontrol(args)"
+                                             display-prop="urunAdi"></rt-multi-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <uib-tabset>
+                        <uib-tab heading="Açıklama">
+                            <rt-editor ng-model="vm.model.aciklama"></rt-editor>
+                        </uib-tab>
+                    </uib-tabset>
+                </div>
+            </div>
+        </div>
+    </rt-panel>
+</rt-form>

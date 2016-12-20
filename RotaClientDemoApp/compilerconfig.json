@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "Content/css/site.css",
+    "inputFile": "Content/scss/demo/demo.scss",
+    "options": { "relativeUrls": false },
+    "minify": {
+      "enabled": false
+    }
+  }
+]
