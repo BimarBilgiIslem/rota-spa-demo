@@ -485,6 +485,7 @@
     <Content Include="Content\img\bg3.jpg" />
     <Content Include="Content\img\de.png" />
     <Content Include="Content\img\default.jpg" />
+    <Content Include="Content\img\edukkan-greeting.png" />
     <Content Include="Content\img\en-us.png" />
     <Content Include="Content\img\es.png" />
     <Content Include="Content\img\oldlogo_bimar.png" />
@@ -830,6 +831,7 @@
     <Content Include="Content\fonts\bootstrap\glyphicons-halflings-regular.woff" />
     <Content Include="Content\fonts\bootstrap\glyphicons-halflings-regular.ttf" />
     <Content Include="Content\fonts\bootstrap\glyphicons-halflings-regular.eot" />
+    <Content Include="Content\scss\demo\_greeting.scss" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
