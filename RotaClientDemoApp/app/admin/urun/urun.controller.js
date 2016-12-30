@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller", "./urun.api", "../kategori/kategori.api"], function (require, exports, app_1, basecrudcontroller_1) {
+define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller", "moment", "./urun.api", "../kategori/kategori.api"], function (require, exports, app_1, basecrudcontroller_1, moment) {
     "use strict";
     //#endregion
     var DEFAULT_IMAGE_URI = "content/img/default.jpg";
@@ -34,6 +34,8 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller",
                 "<b>Cascading rtSelect</b> örneği - Seçilen kategori'ye göre altKategori'leri dolduryoruz",
                 "<b>rtMultiSelect</b> kullanımı",
                 "<b>Custom panel header</b>",
+                "<b>rtMultiFileUpload</b> kullanımı",
+                "<b>moment.js</b> örneği",
                 "<b>BaseCrudController event'leri</b> (getModel,loadedModel,saveModel,beforeSaveModel)",
                 "<b>Custom Validations</b> (BeforeSaveModel event ve Validators servisi)",
                 "<b>rtCallout ve rtValidator</b> kullanımı",
@@ -124,8 +126,10 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller",
             var model = _super.prototype.newModel.call(this, clonedModel);
             model.birimFiyat = 0;
             model.stokMiktari = 1;
+            model.yayinlanmaTarihi = new Date();
             model.iliskiliUrunler = [];
-            this.minYayinlanmaTarihi = new Date();
+            model.ekliDosyalar = [];
+            this.minYayinlanmaTarihi = moment().add(-1, "m").toDate();
             return model;
         };
         /**

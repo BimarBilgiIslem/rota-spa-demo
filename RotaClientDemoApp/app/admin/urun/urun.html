@@ -138,14 +138,22 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-12">
+                <div class="padding-left-5 padding-right-5">
                     <uib-tabset>
                         <uib-tab heading="Açıklama">
                             <rt-editor ng-model="vm.model.aciklama"></rt-editor>
                         </uib-tab>
+                        <uib-tab heading="Ekli dosyalar">
+                            <div class="col-md-10 col-md-push-1">
+                                <rt-multi-file-upload ng-model="vm.model.ekliDosyalar"
+                                                      on-uploaded="vm.urunApi.fileUpload(file)"></rt-multi-file-upload>
+                            </div>
+
+                        </uib-tab>
                     </uib-tabset>
                 </div>
             </div>
+        </div>
         </div>
     </rt-panel>
 </rt-form>

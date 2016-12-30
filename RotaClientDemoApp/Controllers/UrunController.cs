@@ -1,10 +1,13 @@
 ﻿using RotaSPA_Client.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Caching;
 using System.Web.Http;
 using System.Xml.Linq;
 
@@ -12,6 +15,14 @@ namespace RotaSPA_Client.Controllers
 {
     public class UrunController : ApiController
     {
+        /// <summary>
+        /// Upload files
+        /// </summary>
+        private static IDictionary<string, DemoFile> UploadedFiles = new ConcurrentDictionary<string, DemoFile>();
+
+        /// <summary>
+        /// Urun Data
+        /// </summary>
         private static readonly IDictionary<int, Urun> Urunler = new Dictionary<int, Models.Urun>()
         {
             {1, new Urun() {IliskiliUrunler =new List<IliskiliUrun>() {new IliskiliUrun() {Id = 1,UrunId = 1,IliskiliUrunId = 2} } , Id = 1, Kodu = "AD0001543", UrunAdi = "Sony Müzik Seti",StokMiktari=84, KategoriId = 1,AltKategoriId = 4,BirimFiyat = (decimal) 540.80,
@@ -51,6 +62,20 @@ namespace RotaSPA_Client.Controllers
                 Urunler.Add(model.Id, model);
             }
 
+            if (model.EkliDosyalar != null && model.EkliDosyalar.Any())
+            {
+                model.EkliDosyalar.ForEach(item =>
+                {
+                    if (string.IsNullOrEmpty(item.CacheKey)) return;
+                    if (!UploadedFiles.ContainsKey(item.CacheKey)) return;
+
+                    var file = UploadedFiles[item.CacheKey];
+                    //save file to storage
+                    item.CacheKey = "";
+                    item.Id = UploadedFiles.Count + 1;
+                });
+            }
+
             return Ok(new { entity = model });
         }
 
@@ -80,6 +105,32 @@ namespace RotaSPA_Client.Controllers
         public IHttpActionResult GetModelById(int id)
         {
             return Ok(Urunler[id]);
+        }
+
+        [HttpPost]
+        public async Task<IHttpActionResult> UploadFile()
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+
+            var provider = new MultipartMemoryStreamProvider();
+            await Request.Content.ReadAsMultipartAsync(provider);
+
+            try
+            {
+                var cacheKey = Guid.NewGuid().ToString();
+                foreach (var file in provider.Contents)
+                {
+                    var filename = file.Headers.ContentDisposition.FileName.Trim('\"');
+                    var buffer = await file.ReadAsByteArrayAsync();
+                    UploadedFiles.Add(cacheKey, new DemoFile { FileContent = buffer, Name = filename });
+                }
+                return Ok(new { newUid = cacheKey });
+            }
+            catch (Exception exception)
+            {
+                return BadRequest(exception.Message);
+            }
         }
     }
 }

@@ -31,6 +31,14 @@ namespace RotaSPA_Client.Models
         public int StokMiktari { get; set; }
         public DateTime YayinlanmaTarihi { get; set; }
         public List<IliskiliUrun> IliskiliUrunler { get; set; }
+        public List<DemoFile> EkliDosyalar { get; set; }
+    }
+
+    public class DemoFile : BaseModel
+    {
+        public byte[] FileContent { get; set; }
+        public string Name { get; set; }
+        public string CacheKey { get; set; }
     }
 
     public class IliskiliUrun : BaseModel

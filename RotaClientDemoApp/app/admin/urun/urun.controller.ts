@@ -4,6 +4,8 @@
 //#region Imports
 import { App } from "rota/config/app";
 import { BaseCrudController } from "rota/base/basecrudcontroller";
+//moment
+import * as moment from "moment";
 //Fiziksel olarak api dosyalarını define dependency listesine ekliyoruz
 import "./urun.api"
 import "../kategori/kategori.api"
@@ -48,6 +50,8 @@ class UrunController extends BaseCrudController<IUrun> {
             "<b>Cascading rtSelect</b> örneği - Seçilen kategori'ye göre altKategori'leri dolduryoruz",
             "<b>rtMultiSelect</b> kullanımı",
             "<b>Custom panel header</b>",
+            "<b>rtMultiFileUpload</b> kullanımı",
+            "<b>moment.js</b> örneği",
             "<b>BaseCrudController event'leri</b> (getModel,loadedModel,saveModel,beforeSaveModel)",
             "<b>Custom Validations</b> (BeforeSaveModel event ve Validators servisi)",
             "<b>rtCallout ve rtValidator</b> kullanımı",
@@ -139,8 +143,10 @@ class UrunController extends BaseCrudController<IUrun> {
         const model = super.newModel(clonedModel) as IUrun;
         model.birimFiyat = 0;
         model.stokMiktari = 1;
+        model.yayinlanmaTarihi = new Date();
         model.iliskiliUrunler = [];
-        this.minYayinlanmaTarihi = new Date();
+        model.ekliDosyalar = [];
+        this.minYayinlanmaTarihi = moment().add(-1, "m").toDate();
         return model;
     }
     /**

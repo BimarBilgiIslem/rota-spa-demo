@@ -9,6 +9,12 @@
     kayitEdenKullaniciId: number;
     yayinlanmaTarihi?: Date;
     iliskiliUrunler: IBaseListModel<IIliskiliUrun>;
+    ekliDosyalar: IBaseListModel<IEkliDosya>;
+}
+
+
+interface IEkliDosya extends IFileModel {
+
 }
 
 interface IIliskiliUrun extends IBaseCrudModel {
