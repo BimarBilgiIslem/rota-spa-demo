@@ -13,6 +13,7 @@ namespace RotaClientDemoApp
     {
         public void Configuration(IAppBuilder app)
         {
+            //test
             var config = new HttpConfiguration();
             //Register server routes
             RegisterRoutes(RouteTable.Routes);
