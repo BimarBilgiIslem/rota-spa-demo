@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
@@ -8,7 +8,7 @@ using System.Web;
 using System.Web.Http;
 using Microsoft.Reporting.WebForms.Internal.Soap.ReportingServices2005.Execution;
 
-namespace RotaClientDemoApp.Controllers
+namespace RotaSPA_Client.Controllers
 {
     public enum ReportExportTypes
     {
@@ -70,7 +70,7 @@ namespace RotaClientDemoApp.Controllers
             };
             response.Content.Headers.ContentDisposition =
                 new ContentDispositionHeaderValue(reportDispositonType == ReportDispositonTypes.Attachment ? "attachment" : "inline")
-                { FileName = displayReportName };
+                { FileName = HttpUtility.UrlEncode(displayReportName, System.Text.Encoding.UTF8) };
             response.Content.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
             return response;
         }

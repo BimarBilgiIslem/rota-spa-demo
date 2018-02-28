@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "moment"], function (require, exports, moment) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region DateRange directive
     function dateRangeDirective($parse, config, common) {
@@ -25,11 +41,8 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
                     setDates(strDate, endDate);
                     scope.showfixedrange = true;
                 }
-                else {
-                    scope.fixedrange = attrs.fixedRange;
-                }
                 //Watch fixed range
-                scope.$watch('fixedrange', function (newValue) {
+                scope.$watch('fixedRange', function (newValue) {
                     if (newValue) {
                         var strDate = moment().subtract(newValue - 1, 'days').startOf('day').toDate();
                         var endDate = moment().endOf('day').toDate();
@@ -54,22 +67,21 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
             require: '?^form',
             scope: {
                 dateStart: '=',
-                dateEnd: '='
+                dateEnd: '=',
+                fixedRange: '='
             },
-            template: '<div class="row range-date-picker" ng-class="rangeIsValidClass">' +
-                '<div class="col-sm-12 fixedrange" ng-hide="showfixedrange">' +
-                '<input id="fr1" type="radio" ng-model="fixedrange" value="1" /><label for="fr1" i18n=\'rota.bugun\'></label>' +
-                '<input id="fr7" type="radio" ng-model="fixedrange" value="7" /><label for="fr7" i18n=\'rota.sonbirhafta\'></label>' +
-                '<input id="fr30" type="radio" ng-model="fixedrange" value="30" /><label for="fr30" i18n=\'rota.sonbiray\'></label>' +
-                '<input id="fr180" type="radio" ng-model="fixedrange" value="180" /><label for="fr180" i18n=\'rota.sonaltiay\'></label>' +
-                '<input id="fr365" type="radio" ng-model="fixedrange" value="365" /><label for="fr365" i18n=\'rota.sonbiryil\'></label>' +
-                '<input id="cus" type="radio" ng-model="fixedrange" value="" ng-click="showfixedrange=true" /><label for="cus" i18n=\'rota.ozel\'></label></div>' +
-                '<div ng-show="showfixedrange">' +
-                '<div class="col-sm-6 ">' +
-                '<rt-date-picker ng-model=dateStart class="start"></rt-date-picker>' +
-                '</div><div class="col-sm-6 ">' +
-                '<rt-date-picker ng-model=dateEnd class="end"></rt-date-picker>' +
-                '</div></div></div>'
+            template: '<div class="range-date-picker" ng-class="rangeIsValidClass">' +
+                '<div class="fixedrange" ng-hide="showfixedrange">' +
+                '<input id="fr1" type="radio" ng-model="fixedRange" value="1" /><label for="fr1" i18n=\'rota.bugun\'></label>' +
+                '<input id="fr7" type="radio" ng-model="fixedRange" value="7" /><label for="fr7" i18n=\'rota.sonbirhafta\'></label>' +
+                '<input id="fr30" type="radio" ng-model="fixedRange" value="30" /><label for="fr30" i18n=\'rota.sonbiray\'></label>' +
+                '<input id="fr180" type="radio" ng-model="fixedRange" value="180" /><label for="fr180" i18n=\'rota.sonaltiay\'></label>' +
+                '<input id="fr365" type="radio" ng-model="fixedRange" value="365" /><label for="fr365" i18n=\'rota.sonbiryil\'></label>' +
+                '<input id="cus" type="radio" ng-model="fixedRange" value="" ng-click="showfixedrange=true" /><label for="cus" i18n=\'rota.ozel\'></label></div>' +
+                '<div ng-show="showfixedrange" class="custom">' +
+                '<rt-date-picker ng-model=dateStart date-format="time" class="start"></rt-date-picker>' +
+                '<rt-date-picker ng-model=dateEnd date-format="time" class="end"></rt-date-picker>' +
+                '</div>'
         };
         return directive;
         //#endregion
@@ -82,5 +94,4 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
     //#region Register
     var module = angular.module('rota.directives.rtdaterange', []);
     module.directive('rtDateRange', dateRangeDirective);
-    //#endregion
 });

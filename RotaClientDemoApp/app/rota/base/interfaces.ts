@@ -1,4 +1,20 @@
-﻿//#region Main Base Interfaces
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Main Base Interfaces
 interface IBaseService {
     serviceName: string;
 }
@@ -18,11 +34,27 @@ interface IBaseConfigProvider<TConfig extends IBaseConfig> {
  * Dummy Base controller inhereted by all controller types
  */
 interface IBaseController {
+    /**
+     * Called while menu is being changed
+     * @param event Event
+     * @param toState State to transition
+     * @param toParams State params
+     * @param fromState Stata from which transition
+     */
+    onExit?: (event: ng.IAngularEvent, toState: IRotaState, toParams: ng.ui.IStateParamsService, fromState: IRotaState) => void;
 }
+/**
+ * Model controller interface
+ */
+interface IBaseModelController<TModel extends IBaseModel> extends IBaseController {
+    modelPromise: ng.IPromise<TModel | TModel[] | IPagingListModel<TModel>>;
+}
+
+type GetModelFn<T extends IBaseModel> = (modelFilter?: IBaseModelFilter) => ng.IPromise<ModelVariants<T>> | ModelVariants<T>;
 /**
  * Request Options for GET ,POST verbs
  */
-interface IRequestOptions {
+interface IRequestOptions extends ng.IRequestShortcutConfig {
     /**
      * Restful service endpoint uri
      */
@@ -30,12 +62,12 @@ interface IRequestOptions {
     /**
      * Map of strings or objects which will be serialized with the paramSerializer and appended as GET parameters.
      */
-    params?: any;
+    params?: object;
     /**
     * Payload object
      * @description  Data to be sent as the request message data.
     */
-    data?: any;
+    data?: object;
     /**
      * Server controller name
      */
@@ -61,6 +93,10 @@ interface IRequestOptions {
     * Show spinner
     */
     showSpinner?: boolean;
+    /**
+     * Bypass error interceptor,default false
+     */
+    byPassErrorInterceptor?: boolean;
 }
 /**
  * Base api for all services requests restful server side
@@ -74,49 +110,26 @@ interface IBaseApi {
     fileUpload(file: IFileInfo, params?: any): ng.IPromise<IFileUploadResponseData>;
 }
 /**
- * Api that includes custom methods for crud operations
- * @description Please refer to implemention file for restful service endpoint info
+ * Api options used by decorators
  */
-interface IBaseCrudApi<TModel extends IBaseCrudModel> extends IBaseApi {
+interface IApiOptions extends IBaseOptions {
     /**
-     * Make a get request to fetch all models filtered
-     * @param filter Optional filter
-     * @param controller Optional filter
-     * @returns {ng.IPromise<TModel[]>}
+     * Server controller api name
+     * @description  Set "user" if your server api name is UserController for webapi backend
      */
-    getList(filter?: IBaseModelFilter, controller?: string): ng.IPromise<TModel[]>;
+    serverApi?: string;
     /**
-     * Make a get request to fetch all models filtered and paged
-    * @param filter Optional filter
-     * @param controller Optional filter
-     * @returns {ng.IPromise<IPagingListModel<TModel>>}
+     * Cross origin host name api will work with,which defined in global environment as "hosts" 
      */
-    getPagedList(filter?: IBaseModelFilter, controller?: string): ng.IPromise<IPagingListModel<TModel>>;
-    /**
-     * Make a get request to get model by id
-     * @param id Unique id
-     * @param controller Optional controller
-     * @returns {ng.IPromise<TModel>}
-     */
-    getById(id: number, controller?: string): ng.IPromise<TModel>;
-    /**
-     * Make a post request to save model
-     * @param model Model
-     * @param controller Optional controller
-     * @returns {ng.IPromise<ICrudServerResponseData>}
-     */
-    save(model: TModel, controller?: string): ng.IPromise<ICrudServerResponseData>;
-    /**
-     * Make a post request to delete model
-     * @param id Unique id
-     * @param controller Optional controller
-     * @returns {ng.IPromise<any>}
-     */
-    delete(id: number, controller?: string): ng.IPromise<any>;
+    moduleId?: string;
 }
 //#endregion
 
 //#region Base Models
+/**
+ * Model variants
+ */
+type ModelVariants<TModel extends IBaseModel> = TModel | TModel[] | IPagingListModel<TModel>;
 /**
  * Base model for all filtering classes
  */
@@ -131,6 +144,10 @@ interface IBaseReportFilter extends IBaseModelFilter {
  * Base model 
  */
 interface IBaseModel {
+    /**
+     * Model unique id
+     */
+    id?: number;
 }
 /**
  * Model states equivalent to Entity framework entity state
@@ -147,10 +164,6 @@ const enum ModelStates {
  */
 interface IBaseCrudModel extends IBaseModel {
     /**
-     * Model id
-     */
-    id: number;
-    /**
      * Model state
      * @description Should be used along with entityframework entity state
      */
@@ -160,17 +173,11 @@ interface IBaseCrudModel extends IBaseModel {
      */
     isActive?: boolean;
 }
-//TODO:Obserable contructor interface eklenmeli
 /**
  * Obserable model
  * @description Converts literal obj to dynamic model entity
  */
 interface IObserableModel<TModel extends IBaseCrudModel> extends IBaseCrudModel {
-    /**
-     * Extend model 
-     * @param source Source model 
-     */
-    extendModel?: (source: TModel) => void;
     /**
       * Restore model to orginal values
       */
@@ -213,6 +220,10 @@ interface IObserableModel<TModel extends IBaseCrudModel> extends IBaseCrudModel 
      * Globally model identifier 
      */
     _gui?: string;
+    /**
+     * Is Model dirty 
+     */
+    _isDirty?: boolean;
 }
 /**
  * Includes crudmodel & obserable models and extends array with model functions
@@ -223,6 +234,10 @@ interface IBaseListModel<TModel extends IBaseCrudModel> extends Array<TModel & I
     */
     _readonly?: boolean;
     /**
+     * Parent Model of array
+     */
+    parentModel?: IObserableModel<IBaseCrudModel>;
+    /**
      * Register callback event for data change
      * @param callback Callback method
      */
@@ -231,42 +246,12 @@ interface IBaseListModel<TModel extends IBaseCrudModel> extends Array<TModel & I
      * Restore all added models to orginal values
      */
     revertOriginal?: () => void;
-    /**
-    * Find model in collection by id
-    * @param id Model id
-    * @returns {TModel} 
-    */
-    findById?: (id: number) => TModel & IObserableModel<TModel>;
     /** 
     * Find model in collection by gui
     * @param gui Model Gui
     * @returns {TModel} 
     */
     findByGui?: (gui: string) => TModel & IObserableModel<TModel>;
-    /**
-    * Filter the list in the list pass the iterator truth test.
-    * @param callback Iterator function
-    * @returns {IBaseListModel<TModel>}
-    */
-    where?: (fn: _.ListIterator<TModel, boolean>) => IBaseListModel<TModel>;
-    /**
-    * Returns the first element of the list pass the iterator truth test.
-    * @param callback Iterator function
-    * @returns {TModel}
-    */
-    firstOrDefault?: (fn?: _.ListIterator<TModel, boolean>) => TModel & IObserableModel<TModel>;
-    /**
-     *  Returns true if any of the values in the list pass the iterator truth test.
-     * @param fn Iteratır function
-     * @returns {boolean} 
-     */
-    any?: (fn: _.ListIterator<TModel, boolean>) => boolean;
-    /**
-    * Get count in the list pass the iterator truth test.
-    * @param callback Iterator fuction
-    * @returns {number} 
-    */
-    count?: (fn: _.ListIterator<TModel, boolean>) => number;
     /**
      * Remove model or mark model deleted
      * @description This is extension method defined in model.extensions
@@ -281,13 +266,6 @@ interface IBaseListModel<TModel extends IBaseCrudModel> extends Array<TModel & I
      * @returns {IBaseListModel<TModel>}
      */
     removeById?: (id: number) => IBaseListModel<TModel>;
-    /**
-    * Delete model by id
-     * @description Deletes item from list
-    * @param id Model id
-    * @returns {IBaseListModel<TModel>}
-    */
-    deleteById?: (id: number) => IBaseListModel<TModel>;
     /**
      * Remove all items
      * @returns {IBaseListModel<TModel>}
@@ -304,12 +282,6 @@ interface IBaseListModel<TModel extends IBaseCrudModel> extends Array<TModel & I
      * @returns {} 
      */
     new?: (values?: IBaseCrudModel) => TModel;
-    /**
-     * Sum values returned from iteration function
-     * @param fn Iteration function
-     * @returns {number} 
-     */
-    sum?: (fn: _.ListIterator<TModel, number>) => number;
 }
 
 /**
@@ -325,15 +297,40 @@ interface IModelCollectionChangedEvent {
 /**
  * Base paing model for all listing pages
  */
-interface IPagingListModel<TModel extends IBaseCrudModel> {
+interface IPagingListModel<TModel extends IBaseModel> {
     /**
      * Grid current page data
      */
-    data: IBaseListModel<TModel>;
+    data: TModel[];
     /**
      * Total record count
      */
     total?: number;
+}
+/**
+ * Model export options (etc : excel..)
+ */
+interface IExportOptions {
+    fields: Array<string>;
+    headers: Array<string>;
+    exportType?: ModelExports;
+    fileName?: string;
+    pager?: IPager;
+}
+/**
+ * Used for exporting grid on server including columns meta
+ */
+interface IExportFilter<TFilter extends IBaseListModelFilter> {
+    options: IExportOptions,
+    filter?: TFilter;
+}
+/**
+ * Model exports
+ */
+const enum ModelExports {
+    Excel = 1,
+    Pdf = 2,
+    Csv = 4
 }
 /**
  * Obj Enum bind type 
@@ -345,9 +342,18 @@ interface IEnum {
 
 //#region Page Options
 /**
+ * Base options for all objects
+ */
+interface IBaseOptions {
+    /**
+     * Injection name is angular registration name 
+     */
+    registerName?: string;
+}
+/**
 * BasePage options
 */
-interface IBasePageOptions {
+interface IBasePageOptions extends IBaseOptions {
     /**
     * Form name,default rtForm defined in rtForm directive
     */
@@ -356,14 +362,26 @@ interface IBasePageOptions {
     * Scroll the top of the page when controller initiated
     */
     scrollToTop?: boolean;
+    /**
+     * Redefine registerName as null|undefined
+     */
+    registerName: string;
 }
 /**
 * BaseModelPage options
 */
 interface IModelPageOptions extends IBasePageOptions {
     /**
-   * Initialize model runing the initModel method of formController     
-   */
+    * New item field name ,default 'new'
+    */
+    newItemParamValue?: string;
+    /**
+     * New item field value ,default 'id'
+     */
+    newItemParamName?: string;
+    /**
+    * Initialize model runing the initModel method of formController     
+    */
     initializeModel?: boolean;
 }
 /**
@@ -371,21 +389,9 @@ interface IModelPageOptions extends IBasePageOptions {
  */
 interface IListPageOptions extends IModelPageOptions {
     /**
-     * New item field name ,default 'new'
-     */
-    newItemFieldValue?: string;
-    /**
-     * New item field value ,default 'id'
-     */
-    newItemFieldName?: string;
-    /**
-     * Create a unique number for id field when inserting
-     */
-    generateNewItemValue?: boolean;
-    /**
      * Detail page state name of listing page
      */
-    editState: string;
+    editState?: string;
     /**
      * Grid paging is enabled or not
      */
@@ -403,9 +409,48 @@ interface IListPageOptions extends IModelPageOptions {
      */
     listButtonVisibility?: IListButtonsVisibility;
     /**
-     * Store filter values while quiting state
+     * Store filter values while quiting state,default false
      */
     storeFilterValues?: boolean;
+    /**
+     * Storage type of filter,default sessionStorage
+     */
+    storefilterLocation?: CacherType;
+    /**
+     * Element to scroll to after searching completed
+     */
+    elementToScroll?: string;
+    /**
+     * Available export types,default pdf
+     */
+    modelExports?: ModelExports;
+    /**
+     * Refresh list interval,default null
+     */
+    refreshInterval?: 1 | 3 | 5 | 10;
+    /**
+     * Enable refresh list,default false
+     */
+    enableRefresh?: boolean;
+    /**
+     * Stick to the bottom of the navbar while scrolling to down,default true
+     */
+    enableStickyListButtons?: boolean;
+}
+/**
+ * Widget Controller options
+ */
+interface IWidgetPageOptions extends IModelPageOptions {
+
+}
+/**
+ * Directive options
+ */
+interface IDirectiveOptions extends IBaseOptions {
+    /**
+     * Redefine "registerName" as mandatory
+     */
+    registerName: string;
 }
 /**
  * List Buttons Visibilities
@@ -416,23 +461,13 @@ interface IListButtonsVisibility {
     clearButton?: boolean;
     exportButton?: boolean;
     deleteSelected?: boolean;
+    storeFilter?: boolean;
+    storeGridLayout?: boolean;
 }
 /**
  * Crud page options given through constructor
  */
 interface ICrudPageOptions extends IModelPageOptions {
-    /**
-     * New item field name ,default 'new'
-     */
-    newItemParamValue?: string;
-    /**
-     * New item field value ,default 'id'
-     */
-    newItemParamName?: string;
-    /**
-     * Create a unique number for id field when inserting
-     */
-    generateNewItemValue?: boolean;
     /**
      * Flag that checks form dirty state and save model when exiting the form,default true
      */
@@ -462,6 +497,10 @@ interface ICrudPageOptions extends IModelPageOptions {
      * Readonly flag that model can not be changed
      */
     readOnly?: boolean;
+    /**
+    * Stick to the bottom of the navbar while scrolling to down,default true
+    */
+    enableStickyCrudButtons?: boolean;
 }
 /**
  * Crud Buttons Visibilies
@@ -486,12 +525,25 @@ interface IModalPageOptions extends IModelPageOptions {
 /**
  * Base filter for all list pages
  */
-interface IBaseListModelFilter extends IBaseModelFilter {
+interface IBaseListModelFilter extends IBaseModelFilter, IPager {
+}
+/**
+ * Pager model
+ */
+interface IPager {
+    /**
+     * Current page index
+     */
+    pageIndex?: number;
+    /**
+     * Item count listed in a page
+     */
+    pageSize?: number;
 }
 /**
  * Grid options include button options
  */
-interface IGridOptions<TModel extends IBaseCrudModel> extends uiGrid.IGridOptionsOf<TModel> {
+interface IGridOptions<TModel extends IBaseModel> extends uiGrid.IGridOptionsOf<TModel> {
     /**
      * Flag that show edit button on grid 
      */
@@ -512,23 +564,46 @@ interface IGridOptions<TModel extends IBaseCrudModel> extends uiGrid.IGridOption
      */
     showContextMenu?: boolean;
     /**
+     * Enables row click to go to detail state
+     */
+    enableRowClickToEdit?: boolean;
+    /**
+     * Enables row double click to go to detail state
+     */
+    enableRowDoubleClickToEdit?: boolean;
+    /**
      * Custom row template attibutes
      */
     rowTemplateAttrs?: string[];
+    /**
+     * Hidden action buttons on mobile device,default false
+     */
+    hiddenActionButtonsOnMobile?: boolean;
 }
 /**
- * List page localization  
+ * Shortcut flag for column visibility on mobile device
  */
-interface IListPageLocalization {
-    kayitbulunamadi: string;
-    deleteconfirm: string;
-    deleteconfirmtitle: string;
-    deleteselected: string;
-    kayitsayisi: string;
+declare namespace uiGrid {
+    interface IColumnDefOf<TEntity> {
+        hiddenOnMobile?: boolean;
+    }
+}
+/**
+ * Base list controller
+ */
+interface IBaseListController<TModel extends IBaseModel, TModelFilter extends IBaseListModelFilter> extends IBaseModelController<TModel> {
+    options: IListPageOptions;
+    initSearchModel(pager?: IPager, scrollToElem?: ng.IAugmentedJQuery): ng.IPromise<TModel[] | IPagingListModel<TModel>>;
 }
 //#endregion
 
 //#region BaseCrudController
+/**
+ * Base list controller
+ */
+interface IBaseCrudController<TModel extends IBaseCrudModel> extends IBaseModelController<TModel> {
+    options: ICrudPageOptions;
+}
 /**
  * base model filtering object for crud pages
  */
@@ -548,9 +623,13 @@ interface ICrudPageStateParams<TModel extends IBaseCrudModel> extends ng.ui.ISta
      */
     model: TModel;
     /**
-     * Readonly flag
+     * Readonly flag,default false
      */
     readonly?: boolean;
+    /**
+     * Preview mode flag,default false
+     */
+    preview?: boolean;
 }
 /**
  * Flags for Crud pages
@@ -574,30 +653,6 @@ interface ICrudPageFlags {
     isCloning?: boolean;
 }
 /**
- * Navigation direction for navigation buttons on crudButtons
- */
-const enum NavigationDirection {
-    Prev,
-    Next
-}
-/**
- * Localized values for crud page
- */
-interface ICrudPageLocalization {
-    crudonay: string;
-    modelbulunamadi: string;
-    kayitkopyalandi: string;
-    succesfullyprocessed: string;
-    validationhatasi: string;
-    bilinmeyenhata: string;
-    silmeonay: string;
-    silmeonaybaslik: string;
-    kayitbasarisiz: string;
-    okumamoduuyari: string;
-    onayEvet: string;
-    onayHayir: string;
-}
-/**
  * Save options
  */
 interface ISaveOptions {
@@ -618,10 +673,12 @@ interface ISaveOptions {
      */
     message?: string;
     /**
-     * User Model
+     * Literal object model
      */
     jsonModel?: IBaseCrudModel;
-
+    /**
+     * Must be true if custom transition occured on afterSaveModel method
+     */
     redirectHandled?: boolean;
 }
 /**
@@ -656,19 +713,11 @@ interface ICrudParsers {
     /**
      * Parses used for saving process
      */
-    saveParsers: Array<IChainableMethod<any>>;
+    saveParsers: Array<IChainableMethod<IParserException>>;
     /**
      * Parses used for deleting process
      */
-    deleteParsers: Array<IChainableMethod<any>>;
-}
-/**
- * Crud types,Flagable
- */
-const enum CrudType {
-    Create = 1,
-    Update = 2,
-    Delete = 4
+    deleteParsers: Array<IChainableMethod<IParserException>>;
 }
 //#endregion
 
@@ -694,29 +743,36 @@ interface IBaseModalController {
 
 //#region Common
 /**
+ * Generic controller scope used by directives
+ */
+interface IControllerScope<TController extends IBaseController> {
+    vm: TController
+}
+/**
  * Bundle for all pages including all built-it and custom dependencies
  */
 interface IBundle {
     /**
      * System angular services and thirdparty services 
      */
-    systemBundles: { [s: string]: any };
+    services: IDictionary<any>;
     /**
-     * User defined services
+     * Options of injectable object
      */
-    customBundles: { [s: string]: any };
+    options?: IBaseOptions;
 }
 /**
  * Parsers exception include notifictaion type and title
  */
-interface IParserException extends IServerFailedResponseData {
+interface IParserException extends IValidationResult {
     /**
      * Log title
      */
     title?: string;
     /**
      * Log type
+     * @description Log type must be 
      */
-    logType?: LogType;
+    logType: LogType.Error | LogType.Warn;
 }
 //#endregion

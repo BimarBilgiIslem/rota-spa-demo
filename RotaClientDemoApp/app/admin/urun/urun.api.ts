@@ -2,15 +2,15 @@
  * date        : 10/18/2016 11:01:48 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseCrudApi } from "rota/base/basecrudapi";
+import BaseCrudApi from "rota/base/basecrudapi";
+import { Api } from "rota/base/decorators";
 //#endregion
 
 const MIN_STOK_MIKTARI_CACHE_KEY = 'min_stok_miktari';
 const DEFAULT_MIN_STOK_MIKTARI = 10;
 //Define your IurunApi interface in your interface file
-class UrunApi extends BaseCrudApi<IBaseCrudModel> implements IUrunApi {
-
+@Api({ serverApi: 'urun' })
+class UrunApi extends BaseCrudApi<IUrun>  {
     /**
     * Min stok miktari
     * @description Min stok miktari degerini localstorage dan okur
@@ -18,7 +18,7 @@ class UrunApi extends BaseCrudApi<IBaseCrudModel> implements IUrunApi {
     minStokMiktari: number;
 
     constructor(bundle: IBundle) {
-        super(bundle, 'urun');
+        super(bundle);
         this.minStokMiktari = +this.caching.localStorage.get<number>(MIN_STOK_MIKTARI_CACHE_KEY) || DEFAULT_MIN_STOK_MIKTARI;
     }
     /**
@@ -30,7 +30,4 @@ class UrunApi extends BaseCrudApi<IBaseCrudModel> implements IUrunApi {
         this.minStokMiktari = value;
     }
 }
-//#region Register
-App.addApi("urunApi", UrunApi);
-//#endregion
 export { UrunApi }

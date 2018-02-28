@@ -1,15 +1,38 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#region TitleBadge Service
     /**
      * TitleBadge Service
      */
     var TitleBadges = (function () {
-        function TitleBadges(localization) {
+        function TitleBadges($rootScope, localization, constants) {
+            var _this = this;
+            this.$rootScope = $rootScope;
             this.localization = localization;
+            this.constants = constants;
             //#region Props
             this.serviceName = "TitleBadges Service";
             this.initBadges();
+            //clear badges when state changes
+            $rootScope.$on(constants.events.EVENT_STATE_CHANGE_SUCCESS, function () {
+                _this.clearBadges();
+            });
         }
         /**
          * Create all badges
@@ -24,7 +47,7 @@ define(["require", "exports"], function (require, exports) {
             this.badges[1 /* Newmode */] = {
                 color: 'info',
                 icon: 'plus',
-                description: this.localization.getLocal('rota.yenikayit')
+                description: this.localization.getLocal('rota.yeni')
             };
             this.badges[4 /* Cloning */] = {
                 color: 'danger',
@@ -39,7 +62,8 @@ define(["require", "exports"], function (require, exports) {
             this.badges[5 /* Dirty */] = {
                 color: 'success',
                 icon: 'pencil',
-                description: this.localization.getLocal('rota.duzeltiliyor')
+                description: this.localization.getLocal('rota.duzeltiliyor'),
+                hiddenDescOnMobile: true
             };
             this.badges[2 /* Recordcount */] = {
                 color: 'success',
@@ -71,15 +95,15 @@ define(["require", "exports"], function (require, exports) {
                 this.badges[i].show = false;
             }
         };
+        TitleBadges.injectionName = "TitleBadges";
         //#endregion
         //#region Init
-        TitleBadges.$inject = ['Localization'];
+        TitleBadges.$inject = ['$rootScope', 'Localization', 'Constants'];
         return TitleBadges;
     }());
     exports.TitleBadges = TitleBadges;
     //#endregion
     //#region Register
     var module = angular.module('rota.services.titlebadges', []);
-    module.service('TitleBadges', TitleBadges);
-    //#endregion
+    module.service(TitleBadges.injectionName, TitleBadges);
 });

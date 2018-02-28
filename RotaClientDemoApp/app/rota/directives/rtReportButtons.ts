@@ -1,4 +1,20 @@
-﻿interface IReportButtonsScope extends ng.IScope {
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+interface IReportButtonsScope extends ng.IScope {
     onClick: (type: string) => void;
     reportName: string;
     filters: IBaseReportFilter;
@@ -16,9 +32,6 @@ function reportButtonsDirective(reporting: IReporting) {
         link: function (scope: IReportButtonsScope, elem: ng.IAugmentedJQuery, attrs: ng.IAttributes) {
             scope.onClick = (type: string) => {
                 switch (type) {
-                    case "reportviewer":
-                        reporting.showReport({ reportName: scope.reportName, filter: scope.filters });
-                        break;
                     case "indirpdf":
                         reporting.downloadReport({
                             reportName: scope.reportName, displayReportName: scope.reportName + ".pdf",
@@ -62,11 +75,11 @@ function reportButtonsDirective(reporting: IReporting) {
             }
         },
         template:
-        '<div class="btn-group">' +
+        '<div class="btn-group" uib-dropdown>' +
         '<rt-button size="sm" color="info" icon="external-link" click="onClick(\'reportviewer\')" text-i18n="rota.raporgoster"></rt-button>' +
-        '<button type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">' +
+        '<button uib-dropdown-toggle type="button" class="btn btn-info btn-sm dropdown-toggle" data-toggle="dropdown">' +
         '<span class="caret"></span><span class="sr-only">Toggle Dropdown</span></button>' +
-        '<ul class="dropdown-menu">' +
+        '<ul class="dropdown-menu" uib-dropdown-menu>' +
         '<li class="dropdown-header" i18n="rota.indir"></li>' +
         '<li><a href ng-click="onClick(\'indirpdf\')">' +
         '<i class="fa fa-file-pdf-o fa-fw"></i>&nbsp;{{::"rota.indirpdf" | i18n}}' +
@@ -81,9 +94,6 @@ function reportButtonsDirective(reporting: IReporting) {
         '<i class="fa fa-file-code-o fa-fw"></i>&nbsp;{{::"rota.indirhtml" | i18n}}' +
         '</a></li>' +
         '<li class="dropdown-header" i18n="rota.goster"></li>' +
-        '<li><a href ng-click="onClick(\'gosterpdf\')">' +
-        '<i class="fa fa-file-pdf-o fa-fw"></i>&nbsp;{{::"rota.indirpdf" | i18n}}' +
-        '</a></li>' +
         '</ul></div>'
     };
     return directive;

@@ -1,19 +1,14 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/basemodalcontroller"], function (require, exports, app_1, basemodalcontroller_1) {
+define(["require", "exports", "tslib", "rota/base/basemodalcontroller", "rota/base/decorators"], function (require, exports, tslib_1, basemodalcontroller_1, decorators_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     /**
      * Your base modal controller.Replace IBaseCrudModel model with your return model
      */
     var ModalController = (function (_super) {
-        __extends(ModalController, _super);
-        function ModalController(bundle) {
-            _super.call(this, bundle);
-            debugger;
+        tslib_1.__extends(ModalController, _super);
+        function ModalController() {
+            return _super !== null && _super.apply(this, arguments) || this;
         }
         //#region BaseModalController
         ModalController.prototype.modalResult = function (model) {
@@ -22,9 +17,9 @@ define(["require", "exports", "rota/config/app", "rota/base/basemodalcontroller"
         ModalController.prototype.modalliKapat = function () {
             this.closeModal();
         };
+        ModalController = tslib_1.__decorate([
+            decorators_1.Controller("modalController")
+        ], ModalController);
         return ModalController;
-    }(basemodalcontroller_1.BaseModalController));
-    //#region Register
-    app_1.App.addController("modalController", ModalController);
+    }(basemodalcontroller_1.default));
 });
-//#endregion 

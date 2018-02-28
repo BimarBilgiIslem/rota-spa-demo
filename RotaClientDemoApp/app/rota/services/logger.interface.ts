@@ -1,4 +1,20 @@
-﻿//#region Interfaces
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Interfaces
 /**
  * Exception Server log 
  */
@@ -31,7 +47,7 @@ interface ILog {
      */
     title?: string;
     /**
-     * Optional data
+     * Optional data for console logger
      */
     data?: any;
     /**
@@ -39,12 +55,25 @@ interface ILog {
      */
     isSticky?: boolean;
 }
+/**
+ * Log interface for notification logger
+ */
+interface INotifyLog extends ILog {
+    /**
+     * Enum that whether notification will be displayed in top or content
+     */
+    notificationLayout?: NotificationLayout;
+    /**
+     * Notification will close if provided hideDelay in ms passed
+     */
+    autoHideDelay?: number;
+}
 
 type IAlertStyle = 'warning' | 'danger' | 'success' | 'info';
 /**
  * Log object for notification
  */
-interface INotify extends ILog {
+interface INotify extends INotifyLog {
     /**
      * Notifictaion icon
      */
@@ -56,30 +85,42 @@ interface INotify extends ILog {
     style: IAlertStyle;
 }
 /**
+ * Logger remove function
+ */
+interface IRemoveLog {
+    (): void;
+}
+/**
  * Generic log call method
  */
-interface ILogCall {
-    (log: ILog): void
+interface ILogCall<TLog> {
+    (log: TLog): IRemoveLog | void;
 }
 /**
  * Base logger
  */
-interface IBaseLogger {
-    log: ILogCall;
-    info: ILogCall;
-    error: ILogCall;
-    warn: ILogCall;
-    success: ILogCall;
+interface IBaseLogger<TLog extends ILog> {
+    log: ILogCall<TLog>;
+    info: ILogCall<TLog>;
+    error: ILogCall<TLog>;
+    warn: ILogCall<TLog>;
+    success: ILogCall<TLog>;
+    clearAll: () => void;
+}
+/**
+ * Dialog logger
+ */
+interface IDialogLogger extends IBaseLogger<ILog> {
 }
 /**
  * Toastr service
  */
-interface IToastr extends IBaseLogger {
+interface IToastr extends IBaseLogger<ILog> {
 }
 /**
  * Notifiction service
  */
-interface INotification extends IBaseLogger {
+interface INotification extends IBaseLogger<INotifyLog> {
     /**
      * Get active notfifictaions both current and sticky
      */
@@ -98,7 +139,7 @@ interface INotification extends IBaseLogger {
 /**
  * Console logger
  */
-interface IConsole extends IBaseLogger {
+interface IConsole extends IBaseLogger<ILog> {
     important(message: string): void;
     /**
      * Starts a timer with the given name for timer
@@ -117,11 +158,10 @@ interface IConsole extends IBaseLogger {
  * Main Logger service
  */
 interface ILogger extends IBaseService {
-    notification: IBaseLogger;
-    console: IBaseLogger;
-    toastr: IBaseLogger;
+    notification: INotification;
+    console: IConsole;
+    toastr: IToastr;
 }
-
 //#endregion
 
 //#region Enums
@@ -150,5 +190,13 @@ const enum NotifyType {
     Sticky,
     RouteCurrent,
     RouteNext
+}
+/**
+ * Notifictiaon logger layout 
+ */
+const enum NotificationLayout {
+    Content,
+    Top,
+    Modal
 }
 //#endregion

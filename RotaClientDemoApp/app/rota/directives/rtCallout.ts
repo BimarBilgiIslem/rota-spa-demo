@@ -1,4 +1,20 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 import * as moment from "moment";
 //#endregion
 
@@ -12,6 +28,8 @@ interface ICalloutAttributes extends ng.IAttributes {
     maxDate?: string;
     minValue?: number;
     maxValue?: number;
+    min?: number;
+    max?: number;
 }
 //#endregion
 
@@ -97,12 +115,12 @@ function calloutDirective($position: any, $timeout: ng.ITimeoutService, $filter:
                             case "min":
                                 //ngCurrency
                                 errorMessages.unshift(hatalidegermin.replace('{0}',
-                                    $filter('currency')(attrs.minValue || constants.MIN_NUMBER_VALUE, '', 0)));
+                                    $filter('currency')(attrs.minValue || attrs.min || constants.MIN_NUMBER_VALUE, '', 0)));
                                 break;
                             case "max":
                                 //ngCurrency
                                 errorMessages.unshift(hatalidegermax.replace('{0}',
-                                    $filter('currency')(attrs.maxValue || constants.MAX_NUMBER_VALUE, '', 0)));
+                                    $filter('currency')(attrs.maxValue || attrs.max || constants.MAX_NUMBER_VALUE, '', 0)));
                                 break;
                             case attrs.rtValidator:
                                 errorMessages.unshift(scope[attrs.rtValidator]);

@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "../base/obserablemodel"], function (require, exports, obserablemodel_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Set readonly prop of array
      */
@@ -48,42 +64,6 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
     Array.prototype["findByGui"] = function (gui) {
         var item = _.findWhere(this, { gui: gui });
         return item;
-    };
-    /**
-     * Get count in the list pass the iterator truth test.
-     * @param callback Iterator fuction
-     * @returns {number}
-     */
-    Array.prototype["count"] = function (callback) {
-        var items = this.where(this, callback);
-        return items !== null ? items.length : 0;
-    };
-    /**
-     *  Returns true if any of the values in the list pass the iterator truth test.
-     * @param fn Iterator function
-     * @returns {boolean}
-     */
-    Array.prototype["any"] = function (callback) {
-        return _.some(this, callback);
-    };
-    /**
-     * Filter the list in the list pass the iterator truth test.
-      * @param callback Iterator function
-     * @returns {IBaseListModel<TModel>}
-     */
-    Array.prototype["where"] = function (callback) {
-        return _.filter(this, callback);
-    };
-    /**
-     * Returns the first element of the list pass the iterator truth test.
-      * @param callback Iterator function
-     * @returns {IBaseListModel}
-     */
-    Array.prototype["firstOrDefault"] = function (callback) {
-        var result = this;
-        if (callback)
-            result = this.where(callback);
-        return result[0];
     };
     /**
     * Delete model by id
@@ -137,7 +117,7 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
      * @returns {IBaseCrudModel}
      */
     Array.prototype["new"] = function (values) {
-        var item = new obserablemodel_1.ObserableModel(values);
+        var item = new obserablemodel_1.default(values);
         this.add(item);
         return item;
     };
@@ -150,8 +130,8 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
         if (this.any(function (a) { return a._gui === model._gui; }))
             return this;
         //convert literal to obserable 
-        if (!(model instanceof obserablemodel_1.ObserableModel)) {
-            model = new obserablemodel_1.ObserableModel(model);
+        if (!(model instanceof obserablemodel_1.default)) {
+            model = new obserablemodel_1.default(model, this.parentModel);
         }
         //set readonly - this is hack for rtMultiSelect.
         model._readonly = this._readonly;
@@ -165,7 +145,6 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
         //register model changes event
         var self = this;
         model.subscribeDataChanged(function (action) {
-            //only added or deleted model changes events accepted 
             if (self._collectionChangedEvents) {
                 for (var i = 0; i < self._collectionChangedEvents.length; i++) {
                     var callbackItem = self._collectionChangedEvents[i];
@@ -186,20 +165,9 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
      * Register callback event for all collection changes
      * @param callback Callback method
      */
-    Array.prototype["subscribeCollectionChanged"] = function (callback, includeAllChanges) {
+    Array.prototype["subscribeCollectionChanged"] = function (callback) {
         if (!this._collectionChangedEvents)
             this._collectionChangedEvents = [];
         this._collectionChangedEvents.push(callback);
-    };
-    /**
-     * Sum values returned from iteration function
-     * @param callBack Iteration function
-     * @returns {number}
-     */
-    Array.prototype["sum"] = function (callBack) {
-        return _.reduce(this, function (total, item, index, list) {
-            total += callBack(item, index, list);
-            return total;
-        }, 0);
     };
 });

@@ -1,11 +1,14 @@
-define(["require", "exports", "spinner", "bootstrap", "grid", "hotkeys", "scroll", "select", "ngcurrency", "./dateTimeInput", "./datetimepicker", "ct-ui-router-extras", "./underscore.mixed", "mfb", "imgcrop", "jws", "rsa", "jsonsanseval", "crypto", "i18n", "text", "json", "optional", "xdom", "toastr", "fileupload", "circleprogress", "ckeditor", "ng-ckeditor", "ngcontextmenu", "treeview"], function (require, exports) {
+define(["require", "exports", "spinner", "grid", "hotkeys", "scroll", "select", "ng-currency", "./dateTimeInput", "./datetimepicker", "ct-ui-router-extras", "./underscore.mixed", "mfb", "imgcrop", "i18n", "text", "json", "optional", "xdom", "toastr", "fileupload", "circleprogress", "ng-ckeditor", "ngcontextmenu", "uimask"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Register
     angular.module('rota.lib', [
         //Grid plugins
         //https://github.com/angular-ui/ui-grid
-        'ui.grid', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.pagination', 'ui.grid.exporter', 'ui.grid.grouping', 'ui.grid.resizeColumns',
+        'ui.grid', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.pagination', 'ui.grid.exporter',
+        'ui.grid.grouping', 'ui.grid.resizeColumns', 'ui.grid.saveState', 'ui.grid.moveColumns',
+        'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.expandable',
         //Datetime picker
         //https://github.com/dalelotts/angular-bootstrap-datetimepicker
         'ui.dateTimeInput',
@@ -41,9 +44,9 @@ define(["require", "exports", "spinner", "bootstrap", "grid", "hotkeys", "scroll
         //Context Menu
         //https://github.com/Wildhoney/ngContextMenu
         'ngContextMenu',
-        //https://github.com/iVantage/angular-ivh-treeview
-        //Treeview 
-        'ivh.treeview'
+        //Mask
+        //https://github.com/angular-ui/ui-mask
+        'ui.mask'
     ]);
 });
 //#endregion 

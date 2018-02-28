@@ -1,4 +1,56 @@
-﻿
+﻿//Prevent BODY from scrolling when a modal is opened
+//https://stackoverflow.com/questions/9538868/prevent-body-from-scrolling-when-a-modal-is-opened
+/*body.modal-open {
+    overflow: hidden;
+}*/
+
+@mixin alert-dialog($bg-color,$text-color) {
+    .modal-header {
+        border-bottom: 4px solid $bg-color;
+
+        h4 {
+            color: $text-color;
+        }
+    }
+
+    i {
+        color: $text-color;
+    }
+}
+
+.alert-dialog {
+    &.modal-dialog-question {
+        @include alert-dialog($alert-info-bg,$alert-info-text)
+    }
+
+    &.modal-dialog-error {
+        @include alert-dialog($alert-danger-bg,$alert-danger-text)
+    }
+
+    &.modal-dialog-info {
+        @include alert-dialog($alert-info-bg,$alert-info-text)
+    }
+
+    &.modal-dialog-warn {
+        @include alert-dialog($alert-warning-bg,$alert-warning-text)
+    }
+
+    &.modal-dialog-success {
+        @include alert-dialog($alert-success-bg,$alert-success-text)
+    }
+
+    .modal-body {
+        .alert-message {
+        }
+
+        .alert-icon {
+            float: left;
+            padding-right: 1.2em;
+            @include clearfix();
+        }
+    }
+}
+
 .modal {
     .modal-header {
         padding: 5px 15px;
@@ -14,6 +66,7 @@
     }
 
     .modal-body {
+
         p {
             font-size: 1.2em;
             color: #333;
@@ -22,5 +75,74 @@
 
     .modal-footer {
         border-top: none;
+    }
+
+    &.viewport .modal-body {
+        max-height: calc(100vh - 165px);
+        overflow-y: auto;
+    }
+
+    &.left .modal-dialog,
+    &.right .modal-dialog {
+        position: fixed;
+        margin: auto;
+        width: 320px;
+        height: 100%;
+        -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+        -o-transform: translate3d(0%, 0, 0);
+        transform: translate3d(0%, 0, 0);
+    }
+
+    &.left .modal-content,
+    &.right .modal-content {
+        height: 100%;
+        overflow-y: auto;
+        border-radius: 0;
+        border: none;
+    }
+
+    &.left .modal-body,
+    &.right .modal-body {
+        padding: 15px 15px 80px;
+    }
+    /*Left*/
+    &.left.fade .modal-dialog {
+        left: -320px;
+        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+        transition: opacity 0.3s linear, left 0.3s ease-out;
+    }
+
+    &.left.fade.in .modal-dialog {
+        left: 0;
+    }
+    /*Right*/
+    &.right.fade .modal-dialog {
+        right: -320px;
+        -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+        transition: opacity 0.3s linear, right 0.3s ease-out;
+    }
+
+    &.right.fade.in .modal-dialog {
+        right: 0;
+    }
+    //full screen
+    &.modal-fullscreen .modal-dialog {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        left: 0 !important;
+        top: 0 !important;
+    }
+
+    &.modal-fullscreen .modal-content {
+        height: auto;
+        min-height: 100%;
+        border-radius: 0;
     }
 }

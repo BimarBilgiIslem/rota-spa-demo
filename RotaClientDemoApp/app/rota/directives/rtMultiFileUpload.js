@@ -1,13 +1,30 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "../base/obserablemodel"], function (require, exports, obserablemodel_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Directive
-    function multiFileUploadDirective($parse, $q, localization, logger, common, constants) {
+    function multiFileUploadDirective($parse, $q, localization, logger, common, constants, config) {
         //link fn
         function link(scope, element, attrs, modelCtrl) {
             var files = [];
             var models;
             var fileIdPropGetter = $parse(attrs.fileidProp);
+            scope.maxUploadSize = config.maxFileUploadSize;
             //#region Methods
             /**
              * Check extension
@@ -36,7 +53,7 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
                     if (!checkExt(file.name))
                         return;
                     //set file model
-                    var fileModel = new obserablemodel_1.ObserableModel({ name: file.name });
+                    var fileModel = new obserablemodel_1.default({ name: file.name });
                     var uploadedFile = {
                         name: file.name,
                         downloadLink: '',
@@ -91,7 +108,7 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
                         $uploadedFile: {
                             name: file.name,
                             icon: common.getFaIcon(file.name.split('.').pop()),
-                            downloadLink: scope.downloadLink && (scope.downloadLink + '?fileId=' + fileIdPropGetter(file)),
+                            downloadLink: scope.downloadLink && (common.updateQueryStringParameter(scope.downloadLink, "fileId", fileIdPropGetter(file))),
                             isLoaded: true
                         }
                     };
@@ -152,9 +169,11 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
             },
             template: '<ul class="list-group rt-multi-file-upload">' +
                 '<li class="list-group-item text-center" ng-hide=ngDisabled>' +
-                '<a uib-tooltip="{{::\'rota.dosyaekleaciklama\' | i18n}}" ngf-drag-over-class="bold" href style="display:block;padding:0 10px" ngf-drop="uploadFiles($files)" ngf-select-disabled=ngDisabled ngf-select="uploadFiles($files)" ngf-multiple="true" ngf-accept=accept ng-model="internalFiles"><i class="fa fa-file"></i>&nbsp;{{::\'rota.yenidosyaekle\' | i18n}}</a></li>' +
+                '<a uib-tooltip="{{::\'rota.dosyaekleaciklama\' | i18n}}" ngf-drag-over-class="bold" href ngf-drop="uploadFiles($files)" class="badge alert-info selector" ' +
+                'ngf-select-disabled=ngDisabled ngf-select="uploadFiles($files)" ngf-multiple="true" ngf-accept=accept ngf-max-size=maxUploadSize>' +
+                '<i class="fa fa-paperclip"></i>&nbsp;{{::\'rota.yenidosyaekle\' | i18n}}</a></li>' +
                 '<li class="list-group-item rota-animate-rt-multiselect" ng-repeat="file in visibleItems">' +
-                '<a ng-href="{{file.$uploadedFile.downloadLink}}"><i ng-class="[\'fa\', \'fa-fw\', \'fa-\' + file.$uploadedFile.icon]"></i>&nbsp;{{file.$uploadedFile.name}}</a>' +
+                '<a href rt-download="{{file.$uploadedFile.downloadLink}}"><i ng-class="[\'fa\', \'fa-fw\', \'fa-\' + file.$uploadedFile.icon]"></i>&nbsp;{{file.$uploadedFile.name}}</a>' +
                 '<a ng-hide="ngDisabled || !file.$uploadedFile.isLoaded" uib-tooltip="{{::\'rota.tt_sil\' | i18n}}" tooltip-append-to-body="true" href class="pull-right" ng-click="remove(file)"><i class="fa fa-minus-circle text-danger"></i></a>' +
                 '<div ng-hide="file.$uploadedFile.isLoaded" class="pull-right"><round-progress color="#45ccce" max="file.$uploadedFile.total" ' +
                 'current="file.$uploadedFile.loaded" radius="9" stroke="3"></round-progress></div>' +
@@ -164,10 +183,9 @@ define(["require", "exports", "../base/obserablemodel"], function (require, expo
         return directive;
     }
     exports.multiFileUploadDirective = multiFileUploadDirective;
-    multiFileUploadDirective.$inject = ['$parse', '$q', 'Localization', 'Logger', 'Common', 'Constants'];
+    multiFileUploadDirective.$inject = ['$parse', '$q', 'Localization', 'Logger', 'Common', 'Constants', 'Config'];
     //#endregion
     //#region Register
     var module = angular.module('rota.directives.rtmultifileupload', ['ngFileUpload']);
     module.directive('rtMultiFileUpload', multiFileUploadDirective);
-    //#endregion
 });

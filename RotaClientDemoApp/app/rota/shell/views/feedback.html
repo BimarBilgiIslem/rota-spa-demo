@@ -1,0 +1,23 @@
+﻿<rt-form>
+    <div class="modal-header">
+        <h4><i class="fa fa-bullhorn"></i> {{::"rota.geribildirim" | i18n}}</h4>
+        <small i18n="rota.geribildirimaciklama"></small>
+    </div>
+    <div class="modal-body" style="padding-bottom: 30px">
+        <div class="row">
+            <div class="col-xs-12">
+                <label for="mesaj" i18n="rota.mesajgiriniz"></label>
+                <textarea id="mesaj" rows="5" cols="5" style="width: 100%;height: 200px" required ng-model="model.message" rt-focus rt-callout
+                          ph-i18n="rota.mesajgiriniz"></textarea>
+            </div>
+        </div>
+        <label for="mesaj" i18n="rota.degerlendirme" style="display: block;"></label>
+        <span uib-rating style="cursor: pointer" ng-model="model.rate" max="10"></span>
+    </div>
+    <button class="btn btn-block btn-lg btn-primary" style="-ms-border-radius: 0; border-radius: 0"
+            ng-disabled="!model.message || responseInProcess" ng-click="submit()">
+        <i class="fa fa-spin fa-circle-o-notch" ng-if="responseInProcess"></i>
+        <i class="fa fa-envelope" ng-if="!responseInProcess"></i>
+        {{responseInProcess ? 'rota.lutfenbekleyiniz...':'rota.gonder' | i18n}}
+    </button>
+</rt-form>

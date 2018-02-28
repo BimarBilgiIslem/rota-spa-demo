@@ -1,20 +1,19 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller", "./kategori.api"], function (require, exports, app_1, basecrudcontroller_1) {
+define(["require", "exports", "tslib", "rota/base/basecrudcontroller", "rota/base/decorators", "./kategori.api"], function (require, exports, tslib_1, basecrudcontroller_1, decorators_1, kategori_api_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     /**
      * Your base crud controller.Replace IBaseCrudModel with your own model
      */
     var KategoriController = (function (_super) {
-        __extends(KategoriController, _super);
-        function KategoriController(bundle) {
+        tslib_1.__extends(KategoriController, _super);
+        function KategoriController(bundle, kategoriApi) {
+            var _this = 
             //configure options for your need
-            _super.call(this, bundle, {});
-            this.crudPageOptions.crudButtonsVisibility.deleteButton = false;
+            _super.call(this, bundle) || this;
+            _this.kategoriApi = kategoriApi;
+            _this.crudPageOptions.crudButtonsVisibility.deleteButton = false;
+            return _this;
         }
         //#region BaseCrudController
         KategoriController.prototype.getModel = function (modelFilter) {
@@ -43,9 +42,12 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller",
         KategoriController.prototype.afterSaveModel = function (options) {
             this.routing.go('shell.content.kategoriler');
         };
+        KategoriController = tslib_1.__decorate([
+            decorators_1.Controller({
+                registerName: 'kategoriController'
+            }),
+            tslib_1.__metadata("design:paramtypes", [Object, kategori_api_1.KategoriApi])
+        ], KategoriController);
         return KategoriController;
-    }(basecrudcontroller_1.BaseCrudController));
-    //#region Register
-    app_1.App.addController("kategoriController", KategoriController, "kategoriApi", "CurrentUser", "CurrentCompany");
+    }(basecrudcontroller_1.default));
 });
-//#endregion 

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ReportViewer.aspx.cs" Inherits="RotaClientDemoApp.ReportViewer.ReportViewer" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ReportViewer.aspx.cs" Inherits="RotaSPA_Client.ReportViewer" %>
 
 <%@ Register Assembly="Microsoft.ReportViewer.WebForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91"
     Namespace="Microsoft.Reporting.WebForms" TagPrefix="rsweb" %>

@@ -1,18 +1,38 @@
-﻿import * as _s from "underscore.string";
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as _s from "underscore.string";
 /**
  * Injectable class must be overriden by controllers and services to get access of registered dependencies
  */
 class InjectableObject {
     //#region Props
     $injector: ng.auto.IInjectorService;
+    protected currentUser: IUser;
+    protected currentCompany: ICompany;
+
+    static injectionName: string;
     /**
      * Service names to be injected
      */
-    static injects = ['$injector'];
+    static injects = ['$injector', 'CurrentUser', 'CurrentCompany'];
     //#endregion
 
     //#region Init
-    constructor(bundle: IBundle) {
+    constructor(bundle: IBundle, ...services: any[]) {
         this.initBundle(bundle);
     }
     /**
@@ -20,15 +40,9 @@ class InjectableObject {
      * @param bundle Injected services
      */
     initBundle(bundle: IBundle): void {
-        this.$injector = bundle.systemBundles['$injector'];
-        //custom bundles
-        for (let customBundle in bundle.customBundles) {
-            if (bundle.customBundles.hasOwnProperty(customBundle)) {
-                ((bundleName: string) => {
-                    this.defineService(bundleName, bundle.customBundles[bundleName]);
-                })(customBundle);
-            }
-        }
+        this.$injector = bundle.services['$injector'];
+        this.currentUser = bundle.services["currentuser"];
+        this.currentCompany = bundle.services["currentcompany"];
     }
     /**
      * Dynamically define service on controller
@@ -46,4 +60,4 @@ class InjectableObject {
     //#endregion
 }
 
-export { InjectableObject }
+export default InjectableObject 

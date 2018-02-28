@@ -1,0 +1,25 @@
+﻿.nav.navbar-nav {
+    a.sticky {
+        position: relative;
+        min-width: $nav-sticky-min-width;
+
+        .stick-to-right {
+            position: absolute;
+            color: inherit;
+            right: 11px;
+            top: 4px;
+            border: 1px solid $dropdown-link-color;
+            padding: 0px 6px;
+            border-radius: 4px;
+            opacity: .8;
+            transition: 0.2s ease;
+            font-size: .85em;
+
+            &:hover {
+                opacity: 1;
+                border-color: $dropdown-link-hover-color;
+                color: $dropdown-link-hover-color;
+            }
+        }
+    }
+}

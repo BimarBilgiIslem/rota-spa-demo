@@ -1,5 +1,21 @@
-﻿//#region Imports
-import { InjectableObject } from "./injectableobject";
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
+import InjectableObject from "./injectableobject";
 //#endregion
 
 enum RequestMethod {
@@ -14,9 +30,9 @@ enum RequestMethod {
  */
 class BaseApi extends InjectableObject implements IBaseApi {
     //#region Props
-    $rootScope: ng.IRootScopeService;
     $q: angular.IQService;
     $http: ng.IHttpService;
+    $httpParamSerializer: (object: any) => string;
     uploader: ng.angularFileUpload.IUploadService;
     common: ICommon;
     config: IMainConfig;
@@ -24,30 +40,38 @@ class BaseApi extends InjectableObject implements IBaseApi {
     caching: ICaching;
     logger: ILogger;
     constants: IConstants;
+    environment: IGlobalEnvironment;
+    //url options
+    controller?: string;
+    moduleId?: string;
     //#endregion
-
     //#region Init
-    static injects = InjectableObject.injects.concat(['$rootScope', '$q', '$http', 'Config', 'Common', 'Localization', 'Caching', 'Logger', 'Upload', 'Constants']);
+    static injects = InjectableObject.injects.concat(['$q', '$http', '$httpParamSerializer', 'Config', 'Common',
+        'Localization', 'Caching', 'Logger', 'Upload', 'Constants', 'Environment']);
     /**
    * Init bundle
    * @param bundle
    */
     initBundle(bundle: IBundle): void {
         super.initBundle(bundle);
-        this.$rootScope = bundle.systemBundles['$rootScope'];
-        this.$q = bundle.systemBundles['$q'];
-        this.$http = bundle.systemBundles['$http'];
-        this.config = bundle.systemBundles['config'];
-        this.common = bundle.systemBundles['common'];
-        this.localization = bundle.systemBundles['localization'];
-        this.caching = bundle.systemBundles['caching'];
-        this.logger = bundle.systemBundles['logger'];
-        this.uploader = bundle.systemBundles['upload'];
-        this.constants = bundle.systemBundles['constants'];
+        this.$q = bundle.services['$q'];
+        this.$http = bundle.services['$http'];
+        this.$httpParamSerializer = bundle.services['$httpparamserializer'];
+        this.config = bundle.services['config'];
+        this.common = bundle.services['common'];
+        this.localization = bundle.services['localization'];
+        this.caching = bundle.services['caching'];
+        this.logger = bundle.services['logger'];
+        this.uploader = bundle.services['upload'];
+        this.constants = bundle.services['constants'];
+        this.environment = bundle.services['environment'];
     }
 
-    constructor(bundle: IBundle, public controller?: string, private moduleId?: string) {
+    constructor(bundle: IBundle, ...services: object[]) {
         super(bundle);
+        //set options
+        this.controller = bundle.options && (bundle.options as IApiOptions).serverApi;
+        this.moduleId = bundle.options && (bundle.options as IApiOptions).moduleId;
     }
     //#endregion
 
@@ -57,10 +81,10 @@ class BaseApi extends InjectableObject implements IBaseApi {
      * @param file Selected file info
      * @param params Optional params to send to server
      */
-    fileUpload(file: IFileInfo, params?: any): ng.IPromise<IFileUploadResponseData> {
+    fileUpload(file: IFileInfo, params?: any, actionName?: string): ng.IPromise<IFileUploadResponseData> {
         return this.uploader.upload(<any>{
             showSpinner: false,
-            url: this.getAbsoluteUrl(this.constants.server.ACTION_NAME_DEFAULT_FILE_UPLOAD),
+            url: this.getAbsoluteUrl(actionName || this.constants.server.ACTION_NAME_DEFAULT_FILE_UPLOAD),
             method: RequestMethod[RequestMethod.post],
             data: this.common.extend({ file: file }, params)
         }).then((response: IBaseServerResponse<IFileUploadResponseData>): IFileUploadResponseData => {
@@ -72,14 +96,14 @@ class BaseApi extends InjectableObject implements IBaseApi {
     * Make get request with cache options
     * @param options Request Options
     */
-    get<T extends IBaseModel>(options: IRequestOptions): ng.IPromise<T>;
+    get<TResult>(options: IRequestOptions): ng.IPromise<TResult>;
     /**
     * Make get request
     * @param url Url
     * @param params Optional params
     * @returns {IPromise<T>} Promise
     */
-    get<T extends IBaseModel>(action: string, params?: any): ng.IPromise<T>;
+    get<TResult>(action: string, params?: object): ng.IPromise<TResult>;
     /**
    * Make get request
    * @param url Url
@@ -87,22 +111,22 @@ class BaseApi extends InjectableObject implements IBaseApi {
    * @param cache Optional caching will be applied
    * @returns {IPromise<T>} Promise
    */
-    get<T extends IBaseModel>(action: string, params?: any, cache?: boolean): ng.IPromise<T>;
-    get<T extends IBaseModel>(...args: any[]): ng.IPromise<T> {
-        return this.makeRequest<T>(RequestMethod.get, ...args);
+    get<TResult>(action: string, params?: object, cache?: boolean): ng.IPromise<TResult>;
+    get<TResult>(...args: any[]): ng.IPromise<TResult> {
+        return this.makeRequest<TResult>(RequestMethod.get, ...args);
     }
     /**
     * Make get request with cache options
     * @param options Request Options
     */
-    post<T extends IBaseModel>(options: IRequestOptions): ng.IPromise<T>;
+    post<TResult>(options: IRequestOptions): ng.IPromise<TResult>;
     /**
      * Make post request
      * @param url Url
      * @param data Payload object
      * @returns {IPromise<T>} Promise
      */
-    post<T extends {}>(action: string, data?: any): ng.IPromise<T>;
+    post<TResult>(action: string, data?: object): ng.IPromise<TResult>;
     /**
      * Make post request
      * @param url Url
@@ -110,9 +134,9 @@ class BaseApi extends InjectableObject implements IBaseApi {
      * @param cache Optional caching will be applied
      * @returns {IPromise<T>} Promise
      */
-    post<T extends {}>(action: string, data?: any, cache?: boolean): ng.IPromise<T>;
-    post<T extends {}>(...args: any[]): ng.IPromise<T> {
-        return this.makeRequest<T>(RequestMethod.post, ...args);
+    post<TResult>(action: string, data?: object, cache?: boolean): ng.IPromise<TResult>;
+    post<TResult>(...args: any[]): ng.IPromise<TResult> {
+        return this.makeRequest<TResult>(RequestMethod.post, ...args);
     }
     //#endregion
 
@@ -122,7 +146,7 @@ class BaseApi extends InjectableObject implements IBaseApi {
     * @param method Request Method
     * @param args Request args
     */
-    makeRequest<T>(method: RequestMethod, ...args: any[]): ng.IPromise<T> {
+    private makeRequest<TResult>(method: RequestMethod, ...args: any[]): ng.IPromise<TResult> {
         if (args.length === 0) return null;
 
         let options: IRequestOptions;
@@ -140,7 +164,7 @@ class BaseApi extends InjectableObject implements IBaseApi {
         //check if cache is active and returns cached data
         if (options.cache) {
             const cacheKey = options.cacheKey || this.buildUrl(options.url, this.common.extend(options.params, options.data));
-            const cachedData = this.caching.cachers[options.cacheType || CacherType.CacheStorage].get(cacheKey);
+            const cachedData = this.caching.cachers[options.cacheType || CacherType.CacheStorage].get<TResult>(cacheKey);
 
             if (this.common.isAssigned(cachedData)) {
                 return this.$q.when(cachedData);
@@ -155,9 +179,10 @@ class BaseApi extends InjectableObject implements IBaseApi {
                 "Content-Type": "application/json"
             },
             params: options.params,
-            showSpinner: options.showSpinner
+            showSpinner: options.showSpinner,
+            byPassErrorInterceptor: options.byPassErrorInterceptor
         })
-            .then((response: IBaseServerResponse<T>): T => {
+            .then((response: IBaseServerResponse<TResult>): TResult => {
                 //cache if configured
                 if (options.cache) {
                     const cacheKey = options.cacheKey || this.buildUrl(options.url, options.params);
@@ -190,7 +215,7 @@ class BaseApi extends InjectableObject implements IBaseApi {
                             v = angular.toJson(v);
                         }
                     }
-                    parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v));
+                    parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(v)}`);
                 });
             }
         }
@@ -206,14 +231,18 @@ class BaseApi extends InjectableObject implements IBaseApi {
      */
     getAbsoluteUrl(action: string, controller?: string): string {
         let url = `${this.config.defaultApiPrefix}/${controller || this.controller}/${action}`;
-        //if xdom module is defined
-        //TODO:Same origin might be eliminated
-        if (!this.common.isNullOrEmpty(this.moduleId)) {
-            url = window.require.toUrl(`${this.moduleId}/${url}`);
+
+        if (!this.common.isNullOrEmpty(this.moduleId) && this.moduleId !== this.config.host) {
+            const moduleUrl = this.environment.doms[this.moduleId];
+            if (!this.common.isNullOrEmpty(moduleUrl)) {
+                url = `${this.common.addTrailingSlash(moduleUrl)}${url}`;
+            } else {
+                this.logger.console.error({ message: `${this.moduleId} is not defined in environment.doms.${url} will be the returned` });
+            }
         }
         return url;
     }
     //#endregion
 }
 
-export { BaseApi }
+export default BaseApi 

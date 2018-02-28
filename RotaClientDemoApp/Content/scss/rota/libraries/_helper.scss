@@ -13,6 +13,15 @@
 .bold {
     font-weight: bold;
 }
+
+.small-2x {
+    font-size: 70%;
+}
+
+.small-3x {
+    font-size: 55%;
+}
+
 //margins-paddings
 @each $unit in $unit-values {
     @include directional_content(margin,$unit);
@@ -79,16 +88,7 @@
         filter: alpha(opacity = 0);
     }
 }
-//debug panel
-.debug-panel {
-    position: fixed;
-    right: 5px;
-    top: 0;
-    width: 365px;
-    z-index: 99999;
-    overflow: scroll;
-    height: 100%;
-}
+
 //control focus
 .form-control {
     //@include form-control-focus(#b5c6d0);
@@ -108,6 +108,104 @@
     height: auto;
     max-height: 500px;
     overflow-x: hidden;
+
+    &::-webkit-scrollbar {
+        width: 5px;
+        height: 12px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: lighten($dropdown-bg,10%);
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: darken($dropdown-bg,15%);
+        border-radius: 10px;
+    }
+
+    &:hover::-webkit-scrollbar-thumb {
+        background: darken($dropdown-bg,20%);
+    }
+
+    &::-webkit-scrollbar-thumb:horizontal:hover,
+    &::-webkit-scrollbar-thumb:vertical:hover {
+        background: darken($dropdown-bg,25%);
+    }
+
+    &::-webkit-scrollbar-thumb:horizontal:active,
+    &::-webkit-scrollbar-thumb:vertical:active {
+        background: darken($dropdown-bg,30%);
+    }
+}
+/*Sticky panel*/
+.sticky-panel {
+    position: fixed;
+    top: $navbar-height;
+    opacity: .8;
+    transition: 0.4s;
+    margin-top: 6px;
+    z-index: 1000;
+
+    .btn {
+        @include button-size($padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $btn-border-radius-small);
+    }
+
+    &:hover {
+        opacity: 1;
+    }
 }
 
+.loading {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
 
+    h1 {
+        color: #999;
+        font-size: 1.3em;
+        font-weight: normal;
+        padding: 1em 1em 3em;
+        text-align: center;
+    }
+
+    .loader,
+    .loader:after {
+        border-radius: 50%;
+        width: 10em;
+        height: 10em;
+    }
+
+    .loader {
+        margin: 3.75rem auto;
+        font-size: 0.625rem;
+        position: relative;
+        border: 1.1em solid #c8ddef;
+        border-left: 1.1em solid #31708f;
+        transform: translateZ(0);
+        animation: loader 1.1s infinite linear;
+    }
+
+    @-webkit-keyframes loader {
+
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes loader {
+
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+}

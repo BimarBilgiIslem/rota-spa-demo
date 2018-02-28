@@ -1,0 +1,20 @@
+﻿.rt-page-preview {
+    &.popover {
+        max-width: $grid-float-breakpoint + 30px;
+    }
+
+    .popover-content {
+        padding: 0;
+        max-height: 500px;
+        overflow-y: scroll;
+    }
+
+    .rt-page-preview-content {        
+        padding: 6px;
+        //https://stackoverflow.com/questions/10937154/css-scale-an-element-with-100-width
+        width: 142.857143%;
+        transform: scale(.7);
+        transform-origin: 0 0;
+        height: 70%;
+    }
+}

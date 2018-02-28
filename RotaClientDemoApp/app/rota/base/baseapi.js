@@ -1,10 +1,21 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "./injectableobject"], function (require, exports, injectableobject_1) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "tslib", "./injectableobject"], function (require, exports, tslib_1, injectableobject_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     var RequestMethod;
     (function (RequestMethod) {
@@ -17,11 +28,17 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
      * Base Api for all api services
      */
     var BaseApi = (function (_super) {
-        __extends(BaseApi, _super);
-        function BaseApi(bundle, controller, moduleId) {
-            _super.call(this, bundle);
-            this.controller = controller;
-            this.moduleId = moduleId;
+        tslib_1.__extends(BaseApi, _super);
+        function BaseApi(bundle) {
+            var services = [];
+            for (var _i = 1; _i < arguments.length; _i++) {
+                services[_i - 1] = arguments[_i];
+            }
+            var _this = _super.call(this, bundle) || this;
+            //set options
+            _this.controller = bundle.options && bundle.options.serverApi;
+            _this.moduleId = bundle.options && bundle.options.moduleId;
+            return _this;
         }
         /**
        * Init bundle
@@ -29,16 +46,17 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
        */
         BaseApi.prototype.initBundle = function (bundle) {
             _super.prototype.initBundle.call(this, bundle);
-            this.$rootScope = bundle.systemBundles['$rootScope'];
-            this.$q = bundle.systemBundles['$q'];
-            this.$http = bundle.systemBundles['$http'];
-            this.config = bundle.systemBundles['config'];
-            this.common = bundle.systemBundles['common'];
-            this.localization = bundle.systemBundles['localization'];
-            this.caching = bundle.systemBundles['caching'];
-            this.logger = bundle.systemBundles['logger'];
-            this.uploader = bundle.systemBundles['upload'];
-            this.constants = bundle.systemBundles['constants'];
+            this.$q = bundle.services['$q'];
+            this.$http = bundle.services['$http'];
+            this.$httpParamSerializer = bundle.services['$httpparamserializer'];
+            this.config = bundle.services['config'];
+            this.common = bundle.services['common'];
+            this.localization = bundle.services['localization'];
+            this.caching = bundle.services['caching'];
+            this.logger = bundle.services['logger'];
+            this.uploader = bundle.services['upload'];
+            this.constants = bundle.services['constants'];
+            this.environment = bundle.services['environment'];
         };
         //#endregion
         //#region Methods
@@ -47,11 +65,11 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
          * @param file Selected file info
          * @param params Optional params to send to server
          */
-        BaseApi.prototype.fileUpload = function (file, params) {
+        BaseApi.prototype.fileUpload = function (file, params, actionName) {
             var _this = this;
             return this.uploader.upload({
                 showSpinner: false,
-                url: this.getAbsoluteUrl(this.constants.server.ACTION_NAME_DEFAULT_FILE_UPLOAD),
+                url: this.getAbsoluteUrl(actionName || this.constants.server.ACTION_NAME_DEFAULT_FILE_UPLOAD),
                 method: RequestMethod[RequestMethod.post],
                 data: this.common.extend({ file: file }, params)
             }).then(function (response) {
@@ -62,14 +80,14 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
         BaseApi.prototype.get = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
+                args[_i] = arguments[_i];
             }
             return this.makeRequest.apply(this, [RequestMethod.get].concat(args));
         };
         BaseApi.prototype.post = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
+                args[_i] = arguments[_i];
             }
             return this.makeRequest.apply(this, [RequestMethod.post].concat(args));
         };
@@ -118,7 +136,8 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
                     "Content-Type": "application/json"
                 },
                 params: options.params,
-                showSpinner: options.showSpinner
+                showSpinner: options.showSpinner,
+                byPassErrorInterceptor: options.byPassErrorInterceptor
             })
                 .then(function (response) {
                 //cache if configured
@@ -138,7 +157,7 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
             if (!params)
                 return url;
             var parts = [];
-            var _loop_1 = function(key) {
+            var _loop_1 = function (key) {
                 if (params.hasOwnProperty(key)) {
                     var value = params[key];
                     if (!this_1.common.isAssigned(value))
@@ -154,7 +173,7 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
                                 v = angular.toJson(v);
                             }
                         }
-                        parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(v));
+                        parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(v));
                     });
                 }
             };
@@ -174,17 +193,22 @@ define(["require", "exports", "./injectableobject"], function (require, exports,
          */
         BaseApi.prototype.getAbsoluteUrl = function (action, controller) {
             var url = this.config.defaultApiPrefix + "/" + (controller || this.controller) + "/" + action;
-            //if xdom module is defined
-            //TODO:Same origin might be eliminated
-            if (!this.common.isNullOrEmpty(this.moduleId)) {
-                url = window.require.toUrl(this.moduleId + "/" + url);
+            if (!this.common.isNullOrEmpty(this.moduleId) && this.moduleId !== this.config.host) {
+                var moduleUrl = this.environment.doms[this.moduleId];
+                if (!this.common.isNullOrEmpty(moduleUrl)) {
+                    url = "" + this.common.addTrailingSlash(moduleUrl) + url;
+                }
+                else {
+                    this.logger.console.error({ message: this.moduleId + " is not defined in environment.doms." + url + " will be the returned" });
+                }
             }
             return url;
         };
         //#endregion
         //#region Init
-        BaseApi.injects = injectableobject_1.InjectableObject.injects.concat(['$rootScope', '$q', '$http', 'Config', 'Common', 'Localization', 'Caching', 'Logger', 'Upload', 'Constants']);
+        BaseApi.injects = injectableobject_1.default.injects.concat(['$q', '$http', '$httpParamSerializer', 'Config', 'Common',
+            'Localization', 'Caching', 'Logger', 'Upload', 'Constants', 'Environment']);
         return BaseApi;
-    }(injectableobject_1.InjectableObject));
-    exports.BaseApi = BaseApi;
+    }(injectableobject_1.default));
+    exports.default = BaseApi;
 });

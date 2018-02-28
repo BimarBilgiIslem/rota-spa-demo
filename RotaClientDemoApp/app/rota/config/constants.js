@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
     //Global rota contants
@@ -5,13 +20,20 @@ define(["require", "exports"], function (require, exports) {
         //Application
         APP_VERSION: '0.0.1',
         APP_TITLE: 'Bimar Rota SPA App',
-        PRODUCTION_DEBUG_WARNING: 'Dur ! Bu alan yazılımcılar içindir',
-        MIN_NUMBER_VALUE: -9999999999,
+        DEFAULT_LOGO_IMAGE_NAME: 'logo_place_holder.png',
+        DEFAULT_CSS_URL_DEBUG: 'Content/css/site.css',
+        DEFAULT_CSS_URL_PROD: 'Content/css/index.min.css',
+        DEFAULT_STARTUP_MODULE_NAME: 'startup',
+        PRODUCTION_DEBUG_WARNING: 'Bu alan yazılımcılar içindir',
+        MIN_NUMBER_VALUE: 0,
         MAX_NUMBER_VALUE: 9999999999,
         //Localization
         localization: {
-            ACTIVE_LANG_STORAGE_NAME: window.__constants.ACTIVE_LANG_STORAGE_NAME,
-            DEFAULT_LANGUAGE: window.__constants.DEFAULT_LANGUAGE,
+            ACTIVE_LANG_STORAGE_NAME: 'active.language',
+            DEFAULT_LANGUAGE: 'tr-tr',
+            DEFAULT_LANGUAGE_DISPLAY_NAME: 'Türkçe',
+            ENGLISH_LANGUAGE: 'en-us',
+            ENGLISH_LANGUAGE_DISPLAY_NAME: 'English',
             TIME_FORMAT: 'DD-MM-YYYY HH:mm',
             DATE_FORMAT: 'DD-MM-YYYY',
             MONTH_FORMAT: 'YYYY / MM',
@@ -37,52 +59,52 @@ define(["require", "exports"], function (require, exports) {
             ACTION_NAME_GET_BY_ID: 'getmodelbyid',
             ACTION_NAME_SAVE: 'savechanges',
             ACTION_NAME_DELETE: 'deletemodelbyid',
+            ACTION_NAME_EXPORT_LIST: 'exportmodel',
             //Reporting Service
-            ACTION_NAME_SET_REPORT_FILTERS: 'setReportParameters',
-            ACTION_NAME_GENERATE_REPORT: 'generateReport',
             ACTION_NAME_GET_REPORT: 'getReport',
-            //AntiForgeryToken
-            ACTION_NAME_ANTI_FORGERY_TOKEN: '/api/security/antiforgerytoken',
-            HEADER_NAME_ANTI_FORGERY_TOKEN: '__antiForgeryToken',
             //Request Header
-            HEADER_NAME_LANGUAGE: window.__constants.HEADER_NAME_LANGUAGE,
-            HEADER_NAME_ROLE_ID: window.__constants.HEADER_NAME_ROLE_ID,
-            HEADER_NAME_COMPANY_ID: window.__constants.HEADER_NAME_COMPANY_ID,
+            HEADER_NAME_LANGUAGE: 'Rota-Language',
+            HEADER_NAME_ROLE_ID: 'Current-RoleId',
+            HEADER_NAME_COMPANY_ID: 'Current-CompanyId',
             //Misc
             AJAX_TIMER_DELAY: 800
         },
         //Angular event names
         events: {
             //Events names
-            EVENT_LOGIN_CHANGED: 'userLoginChanged',
-            EVENT_AJAX_FINISHED: 'ajaxFinished',
-            EVENT_AJAX_STARTED: 'ajaxStarted',
-            EVENT_LOGIN_REQIRED: 'loginRequired',
-            EVENT_MENU_CHANGED: 'menuChanged',
-            EVENT_MODEL_LOADED: 'modelLoaded'
+            EVENT_LOGIN_CHANGED: 'rota:userLoginChanged',
+            EVENT_AJAX_FINISHED: 'rota:ajaxFinished',
+            EVENT_AJAX_STARTED: 'rota:ajaxStarted',
+            EVENT_LOGIN_REQIRED: 'rota:loginRequired',
+            EVENT_MODEL_LOADED: 'rota:modelLoaded',
+            EVENT_STATE_CHANGE_START: '$stateChangeStart',
+            EVENT_STATE_CHANGE_SUCCESS: '$stateChangeSuccess',
+            EVENT_START_FILEDOWNLOAD: 'rota:filedownload'
         },
         //Grid 
         grid: {
             GRID_DEFAULT_PAGE_SIZE: 25,
             GRID_DEFAULT_OPTIONS_NAME: 'vm.gridOptions',
-            GRID_FULL_FEATUTE_LIST: 'ui-grid-selection ui-grid-pinning ui-grid-pagination ui-grid-exporter ui-grid-resize-columns',
-            GRID_STANDART_FEATURE_LIST: 'ui-grid-pagination ui-grid-exporter',
+            GRID_STANDART_FEATURE_LIST: ['ui-grid-selection', 'ui-grid-pagination', 'ui-grid-exporter', 'ui-grid-resize-columns',
+                'ui-grid-save-state', 'ui-grid-move-columns'],
             /**
             * This template for used if rowFormatter is defined
             * @description https://github.com/angular-ui/ui-grid/blob/master/src/templates/ui-grid/ui-grid-row.html
             */
             GRID_CUSTOM_ROW_TEMPLATE: '<div {0}><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns ' +
                 'track by col.uid" ui-grid-one-bind-id-grid="rowRenderIndex + \'-\' + col.uid + \'-cell\'" class="ui-grid-cell" ' +
-                'ng-class="{ \'ui-grid-row-header-cell\':col.isRowHeader}" role="{{col.isRowHeader ? \'rowheader\' : \'gridcell\'}}" ui-grid-cell></div></div>',
+                'ng-class="{ \'ui-grid-row-header-cell\':col.isRowHeader}" role="{{col.isRowHeader ? \'rowheader\' : \'gridcell\'}}" ' +
+                'ui-grid-cell></div></div>',
             GRID_ROW_FORMATTER_ATTR: "ng-class='grid.options.rowFormatter(row)'",
-            GRID_CONTEXT_MENU_ATTR: "context-menu='contextmenu.html'",
-            GRID_EDIT_BUTTON_HTML: '<a class="btn btn-info btn-xs" ng-click="grid.appScope.vm.goToDetailState(row.entity[\'id\'])"' +
-                ' uib-tooltip=\'Detay\' tooltip-append-to-body="true" tooltip-placement="top"><i class="fa fa-edit"></i></a>',
-            GRID_DELETE_BUTTON_HTML: '<a class="btn btn-danger btn-xs" ' +
-                'ng-click="grid.appScope.vm.initDeleteModel(row.entity[\'id\'])" uib-tooltip=\'Sil\'' +
-                ' tooltip-append-to-body="true" tooltip-placement="top"><i class="fa fa-trash"></i></a>',
-            GRID_PAGE_INDEX_FIELD_NAME: 'pageIndex',
-            GRID_PAGE_SIZE_FIELD_NAME: 'pageSize'
+            GRID_ROW_CLICK_EDIT_ATTR: "ng-click=\"grid.appScope.vm.goToDetailState(row.entity[\'id\'],row.entity,row,$event)\"",
+            GRID_ROW_DOUBLE_CLICK_EDIT_ATTR: "ng-dblclick=\"grid.appScope.vm.goToDetailState(row.entity[\'id\'],row.entity,row,$event)\"",
+            GRID_CONTEXT_MENU_ATTR: "context-menu='contextmenu.html' rt-grid-right-click-sel",
+            GRID_EDIT_BUTTON_HTML: '<div class=\'ui-grid-cell-contents\'><a class="btn btn-info btn-xs" ng-click="grid.appScope.vm.goToDetailState(row.entity[\'id\'],row.entity,row,$event)"' +
+                ' uib-tooltip="{{::\'rota.detay\' | i18n}}" tooltip-append-to-body="true" tooltip-placement="top"><i class="fa fa-edit"></i></a></div>',
+            GRID_DELETE_BUTTON_HTML: '<div class=\'ui-grid-cell-contents\'><a class="btn btn-danger btn-xs" ' +
+                'ng-click="grid.appScope.vm.initDeleteModel(row.entity[\'id\'],row.entity,$event)" uib-tooltip="{{::\'rota.sil\' | i18n}}"' +
+                ' tooltip-append-to-body="true" tooltip-placement="top"><i class="fa fa-trash"></i></a></div>',
+            GRID_MAX_PAGE_SIZE: 999999
         },
         tree: {
             //rtTree
@@ -98,7 +120,7 @@ define(["require", "exports"], function (require, exports) {
             DEFAULT_PLACE_HOLDER_KEY: 'rota.seciniz',
             MIN_AUTO_SUGGEST_CHAR_LEN: 3,
             DEFAULT_ITEMS_COUNT: 100,
-            DEFAULT_REFRESH_DELAY: 700
+            DEFAULT_REFRESH_DELAY: 500
         },
         //Controllers
         controller: {
@@ -109,33 +131,57 @@ define(["require", "exports"], function (require, exports) {
             //New item id param default name
             DEFAULT_NEW_ITEM_PARAM_NAME: 'id',
             DEFAULT_READONLY_PARAM_NAME: 'readonly',
+            PREVIEW_MODE_PARAM_NAME: 'preview',
             DEFAULT_MODEL_ORDER_FIELD_NAME: 'order',
             DEFAULT_AUTOSAVE_INTERVAL: 60 * 1000,
             //Default modal cont.name
-            DEFAULT_MODAL_CONTROLLER_NAME: window.__constants.DEFAULT_MODAL_CONTROLLER_NAME,
+            DEFAULT_MODAL_CONTROLLER_NAME: 'defaultModalController',
+            DEFAULT_MODAL_CONTROLLER_PATH: 'rota/base/defaultmodalcontroller',
             //Default ajax spinner options
             DEFAULT_SPINNER_OPTIONS: {
-                lines: 13,
-                length: 1,
-                width: 10,
-                radius: 30,
-                corners: 1,
-                rotate: 0,
-                direction: 1,
-                color: '#FFC280',
-                speed: 1,
-                trail: 60,
-                shadow: false,
-                hwaccel: false,
-                zIndex: 2e9,
-                top: '50%',
+                lines: 13 // The number of lines to draw
+                ,
+                length: 28 // The length of each line
+                ,
+                width: 14 // The line thickness
+                ,
+                radius: 42 // The radius of the inner circle
+                ,
+                scale: 0.25 // Scales overall size of the spinner
+                ,
+                corners: 1 // Corner roundness (0..1)
+                ,
+                color: '#31708f' // #rgb or #rrggbb or array of colors
+                ,
+                opacity: 0.25 // Opacity of the lines
+                ,
+                rotate: 0 // The rotation offset
+                ,
+                direction: 1 // 1: clockwise, -1: counterclockwise
+                ,
+                speed: 1 // Rounds per second
+                ,
+                trail: 60 // Afterglow percentage
+                ,
+                fps: 20 // Frames per second when using setTimeout() as a fallback for CSS
+                ,
+                zIndex: 2e9 // The z-index (defaults to 2000000000)
+                ,
+                className: 'spinner' // The CSS class to assign to the spinner
+                ,
+                top: '50%' // Top position relative to parent
+                ,
                 left: '50%' // Left position relative to parent
+                ,
+                shadow: false // Whether to render a shadow
+                ,
+                hwaccel: false // Whether to use hardware acceleration
+                ,
+                position: 'absolute' // Element positioning
             },
-            ALLOWED_AVATAR_EXTENSIONS: '.png,.jpg'
-        },
-        //Shortcuts
-        shortcuts: {
-            GO_TO_FIRST_ROW_OF_GRID: 'ctrl+shift+right'
+            ALLOWED_AVATAR_EXTENSIONS: '.png,.jpg',
+            STORAGE_NAME_STORED_FILTER_URL: 'urls_stored_filters',
+            GRID_REFRESH_INTERVALS: [1, 3, 5, 10]
         },
         //Errors
         errors: {
@@ -155,7 +201,6 @@ define(["require", "exports"], function (require, exports) {
             //Routing
             NOT_ROOT_MENU_FOUND: 'root menus not found',
             //Securty
-            NO_ANTIFORGERY_TOKEN_URL_DEFINED: 'no antiForgeryTokenUrl defined',
             NO_AVATAR_URI_PROVIDED: 'no avatarUploadUri is provided',
             //reports
             NO_REPORT_URL_PROVIDED: 'reportcontroller url is not defined',
@@ -163,26 +208,24 @@ define(["require", "exports"], function (require, exports) {
             //validators
             NO_VALIDATORS_DEFINED: 'validators only available in basecrudcontroller',
             NO_VALIDATOR_DEFINED: 'no validator defined with the name {0}',
-            NO_VALIDATION_FUNC_DEFINED: 'no validation function defined'
+            NO_VALIDATION_FUNC_DEFINED: 'no validation function defined',
+            //Identity server errors
+            IDSRV_GENERIC_ERROR_EN: 'There is something wrong with this app authorization,please refer to help desk !',
+            IDSRV_GENERIC_ERROR_TR: 'Uygulama yetkilendirme ayarlarında problem mevcut,Lütfen sistem destek ekibi ile görüşünüz !',
+            IDSRV_IAT_IS_IN_FUTURE_ERROR_EN: 'There is a discrepancy in system time of this running device/computer with the server.\n' +
+                'It needs to be aligned with server time settings.',
+            IDSRV_IAT_IS_IN_FUTURE_ERROR_TR: 'Server saat ayarları ile çalıştığınız makinanın ayarları farklılık gösteriyor.\n' +
+                'Server saati ile eşitlenmesi gerekiyor.',
+            STARTUP_FAILED: 'startup module must return the App class - i.e export = App'
         },
         //Securty Service
         security: {
-            //OIC discovery endpoint part 
-            AUTHORITY_PART: '.well-known/openid-configuration',
-            //Builtin claims to be purged
-            OPEN_ID_BUILTIN_CLAIMS: [
-                'iss', 'sub', 'aud', 'exp', 'iat', 'acr', 'amr', 'azp', 'sid',
-                'nonce', 'auth_time', 'client_id', 'idp', 'nbf', 'scope', 'at_hash'
-            ],
-            DEFAULT_ROTA_SCOPES: 'openid rotauser rotaapi',
-            DEFAULT_ROTA_RESPONSE_TYPE: 'id_token token',
-            //Redirect Uri path
-            REDIRECT_URI_PATH: '/home/signin',
             //Storage names
-            STORAGE_NAME_AUTH_TOKEN: window.__constants.STORAGE_NAME_AUTH_TOKEN,
-            STORAGE_NAME_ROLE_ID: window.__constants.STORAGE_NAME_ROLE_ID,
-            STORAGE_NAME_COMPANY_ID: window.__constants.STORAGE_NAME_COMPANY_ID,
-            STORAGE_NAME_TEMP_STATE: 'rota-temp-state'
+            STORAGE_NAME_CURRENT_COMPANY: 'current-company',
+            STORAGE_NAME_REQUEST_HEADER_MAPS: 'request-header-maps',
+            IDLE_TIMEOUT: 1800000,
+            COUNT_DOWN_FOR_IDLE_TIMEOUT: 300000,
+            ACCESS_TOKEN_QUERY_STRING_NAME: 'access_token'
         },
         //Logger service
         logger: {
@@ -197,22 +240,44 @@ define(["require", "exports"], function (require, exports) {
         },
         routing: {
             //shell options
+            SHELL_CONTROLLER_NAME: 'ShellController',
             SHELL_PATH: 'rota/shell/views/',
             SHELL_STATE_NAME: 'shell',
             SHELL_CONTENT_STATE_NAME: 'shell.content',
+            QUICKMENU_STORAGE_KEY: 'quick-menus',
+            MAX_QUICKMENU_LEN: 4,
             //error pages settings
-            NOT_FOUND_HTML_NAME: 'error404.html',
+            TEMPLATES: {
+                error404: 'rota/error404.tpl.html',
+                error500: 'rota/error500.tpl.html',
+                title: 'rota/title.tpl.html',
+                shell: 'rota/shell.tpl.html',
+                header: 'rota/header.tpl.html',
+                userprofile: 'rota/user-profile.tpl.html',
+                badges: 'rota/badges.tpl.html',
+                actions: 'rota/header-action-buttons.tpl.html',
+                breadcrumb: 'rota/breadcrumb.tpl.html',
+                content: 'rota/content.tpl.html',
+                currentcompany: 'rota/current-company.tpl.html',
+                navmenumobile: 'rota/nav-menu-mobile.tpl.html',
+                feedback: 'rota/feedback.tpl.html'
+            },
             NOT_FOUND_STATE_NAME: 'shell.error404',
-            INTERNAL_ERROR_HTML_NAME: 'error500.html',
             INTERNAL_ERROR_STATE_NAME: 'shell.error500',
             //alias
             CONTROLLER_ALIAS_NAME: 'vm',
             SHELL_CONTROLLER_ALIAS_NAME: 'shellvm'
+        },
+        dashboard: {
+            MIN_WIDGET_REFRESH_INTERVAL: 5000,
+            WIDGET_LOADING_TEMPLATE: '<div class="loading"><h1><div class="loader"></div>Loading...</h1></div>'
+        },
+        style: {
+            IMG_BASE_PATH: '/Content/img',
+            DEFAULT_FAVICON_NAME: 'favicon-default.ico',
+            WARNING_FAVICON_NAME: 'favicon-warn-sign.png',
+            DEFAULT_AVATAR_NAME: 'avatar-default-{size}.png'
         }
     };
-    exports.rotaConstants = rotaConstants;
-    //#region Register
-    var module = angular.module('rota.constants', []);
-    module.constant('Constants', rotaConstants);
-    //#endregion
+    return rotaConstants;
 });

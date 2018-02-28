@@ -1,5 +1,21 @@
-define(["require", "exports", 'jquery', "../base/obserablemodel"], function (require, exports, $, obserablemodel_1) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "jquery", "../base/obserablemodel"], function (require, exports, $, obserablemodel_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Multi Select Directive
     function multiSelectDirective($timeout, $parse, $injector, $q, common, logger, dialogs, multiSelectI18NService, constants) {
@@ -16,7 +32,8 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                 .attr('placeholder', cAttrs.placeholder)
                 .attr('items-count', cAttrs.itemsCount)
                 .attr('new-item-options', cAttrs.newItemOptions)
-                .attr('search-item-options', cAttrs.searchItemsOptions);
+                .attr('search-item-options', cAttrs.searchItemsOptions)
+                .attr('min-auto-suggest-char-len', cAttrs.minAutoSuggestCharLen);
             if (common.isDefined(cAttrs.onRefresh)) {
                 dropDown.attr('on-refresh', 'onRefresh({keyword:keyword})');
                 dropDown.attr('on-get', 'onGet({id:id})');
@@ -113,10 +130,11 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                             return model.$selectItem[attrs.groupbyProp];
                         });
                     }
-                    //Required settings
+                    //run all validators
+                    modelCtrl.$validate();
+                    //set required validator
                     var required = !scope.visibleItems.length && common.isDefined(attrs.required) && attrs.required;
                     modelCtrl.$setValidity('required', !required);
-                    modelCtrl.$validate();
                 };
                 /**
                  *  Find list item by list item or value
@@ -240,7 +258,7 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                         if (scope.showSelection) {
                             model[attrs.selectionProp] = false;
                         }
-                        return new obserablemodel_1.ObserableModel(model);
+                        return new obserablemodel_1.default(model);
                     }
                     else {
                         return selectValue;
@@ -276,6 +294,8 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                 var addItem = function (selectItem, model, isBatchProcess) {
                     if (!common.isAssigned(selectItem))
                         return common.rejectedPromise('select item must be assigned');
+                    if (common.isArray(selectItem))
+                        return common.rejectedPromise('select item must be object not array');
                     var defer = $q.defer();
                     //check item already added previously
                     var existingModel = findListItem(selectItem);
@@ -448,11 +468,13 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                  */
                 scope.setSelected = function (selItem, groupItems) {
                     //uncheck all items
-                    (groupItems || addedItems).forEach(function (item) {
+                    var items = groupItems || addedItems;
+                    for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+                        var item = items_1[_i];
                         if (item.$model[attrs.selectionProp] === true) {
                             item.$model[attrs.selectionProp] = false;
                         }
-                    });
+                    }
                     //set selection
                     selItem.$model[attrs.selectionProp] = true;
                 };
@@ -573,5 +595,4 @@ define(["require", "exports", 'jquery', "../base/obserablemodel"], function (req
                 '<i class="fa fa-minus-circle text-danger"></i></a></td></tr></table></div></div>');
         }
     ]);
-    //#endregion
 });

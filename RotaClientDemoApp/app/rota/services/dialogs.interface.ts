@@ -1,30 +1,61 @@
-﻿//#region Dialog Interfaces
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Dialog Interfaces
+const enum DialogType {
+    Info,
+    Error,
+    Warn,
+    Success,
+    Question
+}
 /**
- * Dialog window options
+ * Base Dialog window options
  */
 interface IDialogOptions {
     message?: string,
     title?: string,
     okText?: string;
     windowClass?: string;
+    dialogType?: DialogType;
+}
+
+interface IDialogStyle {
+    [dialogType: number]: { windowClass: string; iconName: string, defaultTitle: string }
 }
 /**
- * Dialog window scope
+ * Base Dialog window scope
  */
 interface IDialogScope extends ng.IScope, IDialogOptions {
-    ok(): void
+    ok(): void;
+    dialogStyle: string;
 }
 /**
  * COnfirm window options
  */
 interface IConfirmOptions extends IDialogOptions {
     cancelText?: string;
+    cancel2Text?: string;
+    controller?: any[] | Function;
 }
 /**
  * Confirm window scope
  */
 interface IConfirmScope extends IDialogScope, IConfirmOptions {
-    cancel(): void;
+    cancel(reason?: string): void;
 }
 
 interface IReportOptions extends IDialogOptions {
@@ -142,16 +173,31 @@ interface IModalInstanceOptions {
     /**
      * Optional services to be injected 
      */
-    services?: string[];
+    services?: CustomService[];
+    /**
+     * Converts obj to obserable model
+     */
+    convertToObserableModel?: boolean;
+}
+/**
+ * Custom service type
+ */
+type CustomService = {
+    injectionName: string;
+    instanceName: string;
 }
 /**
  * Modal options
  */
 interface IModalOptions extends ng.ui.bootstrap.IModalSettings {
     /**
-     * Modal template url
+     * Modal template relative url
      */
-    templateUrl: string;
+    templateUrl?: string;
+    /**
+     * Modal template absolute url
+     */
+    absoluteTemplateUrl?: string;
     /**
      * Controller url
      */
@@ -165,8 +211,35 @@ interface IModalOptions extends ng.ui.bootstrap.IModalSettings {
      * @description Controller should be string or left undefined.In case of undefined,default modal controller assigned to modal (BaseModalController)
      */
     controller?: any;
+    /**
+     * Optional suffix of modal window class. The value used is appended to the `modal-` class, i.e. a value of `sm` gives `modal-sm`.
+     */
+    size?: 'sm' | 'md' | 'lg';
+    /**
+     * Modal will be opened at window size on init
+     */
+    isMaximized?: boolean;
+    /**
+     * Modal is able to be maximized by double-clicking the header
+     */
+    canMaximized?: boolean;
+    /**
+     * Set if you'd like to the modal appear at the left or right sides,default false
+     */
+    isSideBar?: boolean;
+    /**
+     * SideBar position,default "left"
+     */
+    sideBarPosition?: 'left' | 'right';
+    /**
+     * Show modal at viewport size when its height exceeds viewport height
+     */
+    viewPortSize?: boolean;
+    /**
+     * Host data to generate controller and template url depending cross origin domains defined in [environment.doms]
+     */
+    host?: string;
 }
-
 /**
  * Image Cropping Scope
  */
@@ -239,6 +312,6 @@ interface IDialogs extends IBaseService {
      * if ControllerUrl not defined,it will be looked in templateUrl path
      * @param options Modal options
    */
-    showModal<TResult extends IBaseModel>(options: IModalOptions): ng.IPromise<TResult>;
+    showModal<TResult>(options: IModalOptions): ng.IPromise<TResult>;
 }
 //#endregion

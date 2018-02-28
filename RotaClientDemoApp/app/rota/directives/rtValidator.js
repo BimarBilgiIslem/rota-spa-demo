@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Directive
     function validatorDirective(common, constants, localization) {
@@ -18,6 +34,9 @@ define(["require", "exports"], function (require, exports) {
                     //register asyncvalidators when changes occured
                     if (validator_1.triggerOn & 2 /* Changes */) {
                         ngModelCnt.$asyncValidators[attrs.rtValidator] = function (modelValue, viewValue) {
+                            //ignore initial validation
+                            if (!ngModelCnt.$dirty)
+                                return common.promise();
                             var value = modelValue || viewValue;
                             return validators_1.runValidation(validator_1, 2 /* Changes */, value)
                                 .catch(function (result) {
@@ -30,8 +49,14 @@ define(["require", "exports"], function (require, exports) {
                     //register blur event 
                     if (validator_1.triggerOn & 1 /* Blur */) {
                         //element must be input type
-                        $(element).bind('blur', function () {
+                        var inputElem = element[0] instanceof HTMLInputElement ? element : element.find('input');
+                        inputElem && $(inputElem).bind('blur', function () {
                             var value = ngModelCnt.$modelValue || ngModelCnt.$viewValue;
+                            //first set pending status 
+                            if (common.isNullOrEmpty(value)) {
+                                ngModelCnt.$setValidity(attrs.rtValidator, true);
+                                return;
+                            }
                             validators_1.runValidation(validator_1, 1 /* Blur */, value)
                                 .then(function () {
                                 ngModelCnt.$setValidity(attrs.rtValidator, true);
@@ -41,13 +66,19 @@ define(["require", "exports"], function (require, exports) {
                                 ngModelCnt.$setValidity(attrs.rtValidator, false);
                             });
                         });
+                        //reset validation when model set to pristine
+                        scope.$watch(function () { return ngModelCnt.$pristine; }, function (pristine) {
+                            if (pristine) {
+                                ngModelCnt.$setValidity(attrs.rtValidator, true);
+                            }
+                        });
                     }
                 }
             }
         }
         var directive = {
             restrict: 'A',
-            require: 'ngModel',
+            require: '?ngModel',
             link: link
         };
         return directive;
@@ -58,5 +89,4 @@ define(["require", "exports"], function (require, exports) {
     //#region Register
     angular.module('rota.directives.rtvalidator', [])
         .directive('rtValidator', validatorDirective);
-    //#endregion
 });

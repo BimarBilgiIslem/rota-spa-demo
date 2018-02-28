@@ -1,4 +1,20 @@
-﻿//#region Interfaces
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Interfaces
 interface IButtonAttributes extends ng.IAttributes {
     iconToRight: boolean;
     shortcut: string;
@@ -13,11 +29,12 @@ interface IButtonScope extends ng.IScope {
     doclick(e?: ng.IAngularEvent): void;
     click(e: ng.IAngularEvent): ng.IPromise<any> | any;
     isBusy: boolean;
+    elemToScroll?: string;
 }
 //#endregion
 
 //#region Directive
-function buttonDirective(hotkeys: ng.hotkeys.HotkeysProvider, localization: ILocalization, common: ICommon) {
+function buttonDirective($document: duScroll.IDocumentService, hotkeys: ng.hotkeys.HotkeysProvider, localization: ILocalization, common: ICommon) {
     const pendingText = localization.getLocal('rota.lutfenbekleyiniz');
 
     function compile(tElement: ng.IAugmentedJQuery, tAttrs: IButtonAttributes) {
@@ -26,7 +43,7 @@ function buttonDirective(hotkeys: ng.hotkeys.HotkeysProvider, localization: ILoc
             disabledAttr += ` || (${tAttrs['ngDisabled']})`;
         }
         tAttrs.$set('ngDisabled', disabledAttr);
-        return (scope: IButtonScope, element: ng.IAugmentedJQuery, attrs: IButtonAttributes): void => {
+        return (scope: IButtonScope, element: ng.IAugmentedJQuery, attrs: IButtonAttributes, formCnt?: ng.IFormController): void => {
             //get original items
             let orjText = scope.text;
             const orjIcon = scope.icon;
@@ -58,6 +75,11 @@ function buttonDirective(hotkeys: ng.hotkeys.HotkeysProvider, localization: ILoc
             };
             const endAjax = () => {
                 setButtonAttrs({ caption: orjText, icon: orjIcon, disable: false });
+                //scroll if elem is defined
+                if (scope.elemToScroll && formCnt && formCnt.$valid) {
+                    const elem = document.getElementById(scope.elemToScroll);
+                    $document.duScrollToElement(angular.element(elem), 0, 750);
+                }
             };
             scope.doclick = e => {
                 const result = scope.click(e);
@@ -74,13 +96,15 @@ function buttonDirective(hotkeys: ng.hotkeys.HotkeysProvider, localization: ILoc
     const directive = <ng.IDirective>{
         restrict: 'AE',
         replace: true,
+        require: '?^form',
         scope: {
             text: '@',
             textI18n: '@',
             icon: '@',
             color: '@',
             click: '&',
-            size: '@'
+            size: '@',
+            elemToScroll: '@'
         },
         templateUrl: (elem: ng.IAugmentedJQuery, attr: IButtonAttributes) => (angular.isDefined(attr.iconToRight) ?
             'rota/rtbutton-r.tpl.html' : 'rota/rtbutton-l.tpl.html'),
@@ -88,7 +112,7 @@ function buttonDirective(hotkeys: ng.hotkeys.HotkeysProvider, localization: ILoc
     };
     return directive;
 }
-buttonDirective.$inject = ['hotkeys', 'Localization', 'Common'];
+buttonDirective.$inject = ['$document', 'hotkeys', 'Localization', 'Common'];
 //#endregion
 
 //#region Register

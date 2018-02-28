@@ -2,16 +2,13 @@
  * date        : 10/18/2016 11:01:48 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseCrudApi } from "rota/base/basecrudapi";
+import BaseCrudApi from "rota/base/basecrudapi";
+import { Api } from "rota/base/decorators";
 //#endregion
 
 //Define your IurunApi interface in your interface file
-class KategoriApi extends BaseCrudApi<IBaseCrudModel> implements IKategoriApi {
-    constructor(bundle: IBundle) {
-        super(bundle, 'kategori');
-    }
-
+@Api({ serverApi: 'kategori' })
+class KategoriApi extends BaseCrudApi<IKategori> {
     listeyiAl(filter: IKategoriFilter): IP<IKategori[]> {
         return this.get({ action: 'ListeyiAl', params: filter })
             .then((kategoriler: IBaseListModel<IKategori>) => {
@@ -27,7 +24,4 @@ class KategoriApi extends BaseCrudApi<IBaseCrudModel> implements IKategoriApi {
         return this.post({ action: 'SaveChanges', data: model });
     }
 }
-//#region Register
-App.addApi("kategoriApi", KategoriApi);
-//#endregion
 export { KategoriApi }

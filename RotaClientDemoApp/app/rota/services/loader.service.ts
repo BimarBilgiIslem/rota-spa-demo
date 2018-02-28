@@ -1,55 +1,87 @@
-﻿//#region Imports
-import './loader.config';
-//#endregion
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 //#region Loader Service
-
 /**
  * Controller File Loader Service
  */
 class Loader implements ILoader {
     serviceName: string = "Loader Service";
+    static injectionName = "Loader";
     //states
-    static $inject = ['LoaderConfig', 'RouteConfig'];
-    constructor(private loaderconfig: ILoaderConfig, private routeconfig: IRouteConfig) {
+    static $inject = ['$q', '$rootScope', 'Common', 'Config'];
+    constructor(private $q: ng.IQService,
+        private $rootScope: IRotaRootScope,
+        private common: ICommon,
+        private config: IMainConfig) {
     }
     /**
-     * Generate file path depending on provided settings and general settings
-     * @param settings Settings
+     * Load file
+     * @param url normalized or relative path
      */
-    getPath(settings: ILoaderSettings): string {
-        let relativePath = settings.controllerUrl;
-        if (!relativePath && (settings.useTemplateUrlPath || this.loaderconfig.useTemplateUrlPath)) {
-            relativePath = settings.templateUrl.replace('.html', '.controller');
-        }
-        const controllerFullName = relativePath;
-        return controllerFullName;
+    private load(url: string[]): ng.IPromise<string | string[] | RequireError> {
+        var defer = this.$q.defer<string | string[] | RequireError>();
+        window.require(url, (...responses: any[]) => {
+            defer.resolve(responses);
+            this.$rootScope.$apply();
+        }, reason => {
+            defer.reject(reason);
+        });
+        return defer.promise;
+    }
+
+    /**
+    * Normalize url
+    * @param path Url to normalize
+    * @param host Host
+    */
+    private normalize(path: string, host: string = this.config.host): string {
+        //return path if within the same host
+        let result = this.config.host === host ? path : `${host}/${this.common.toUrl(path, false)}`;
+        //set text plugin prefix for html files
+        if (this.common.isHtml(result) && result.indexOf('text!') === -1) result = 'text!' + result;
+        return result;
     }
     /**
-     * Returns inline annotated function array for the loaded file
-     * @param settings Settings
-     */
-    resolve(settings: ILoaderSettings): { [index: string]: any[] } {
-        var fileFullPath = this.getPath(settings);
+      * Load file from server with the provided url
+      * @param url Url
+      * @returns {ng.IPromise<string>}
+      */
+    resolve(url: string): ng.IPromise<string>;
+    resolve(url: string, host: string): ng.IPromise<string>;
+    /**
+    * Load provided files from server
+    * @param urls Url array
+    * @returns {ng.IPromise<string[]>}
+    */
+    resolve(urls: string[]): ng.IPromise<string[]>;
+    resolve(urls: string[], host: string): ng.IPromise<string[]>;
+    resolve(...args: any[]): ng.IPromise<string | string[] | RequireError> {
+        let arrayValue = !this.common.isArray(args[0]) ? [args[0]] : args[0];
+        //set text plugin prefix for html files
+        arrayValue = arrayValue.map(url => this.normalize(url, args[1]));
         //file resolve
-        return {
-            //lazy loading promise
-            load: ['$q', '$rootScope', ($q: ng.IQService, $rootScope: ng.IRootScopeService) => {
-                var defer = $q.defer();
-                window.require([fileFullPath], () => {
-                    defer.resolve();
-                    $rootScope.$apply();
-                });
-                return defer.promise;
-            }]
-        };
+        return this.load(arrayValue);
     }
 }
 //#endregion
 
 //#region Register
-var module: ng.IModule = angular.module('rota.services.loader', ['rota.services.loader.config']);
-module.service('Loader', Loader);
+var module: ng.IModule = angular.module('rota.services.loader', []);
+module.service(Loader.injectionName, Loader);
 //#endregion
 
 export { Loader };

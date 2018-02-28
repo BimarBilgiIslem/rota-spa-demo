@@ -1,13 +1,14 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Web;
 using Microsoft.Reporting.WebForms;
 using Microsoft.Reporting.WebForms.Internal.Soap.ReportingServices2005.Execution;
-using RotaClientDemoApp.Controllers;
+using RotaSPA_Client.Controllers;
 using ReportParameter = Microsoft.Reporting.WebForms.ReportParameter;
 
-namespace RotaClientDemoApp.ReportViewer
+namespace RotaSPA_Client
 {
     public partial class ReportViewer : System.Web.UI.Page
     {

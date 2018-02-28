@@ -1,5 +1,21 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "tslib"], function (require, exports, tslib_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    /*
+     * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *   http://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
     //#region Dialog Service
     /**
      * Dialog service
@@ -17,6 +33,35 @@ define(["require", "exports"], function (require, exports) {
             this.localization = localization;
             this.constants = constants;
             this.serviceName = 'Dialog Service';
+            //set settings for style
+            this.dialogStyleSettings = (_a = {},
+                _a[1 /* Error */] = {
+                    windowClass: "modal-dialog-error",
+                    iconName: "minus-circle",
+                    defaultTitle: localization.getLocal("rota.titleerror")
+                },
+                _a[2 /* Warn */] = {
+                    windowClass: "modal-dialog-warn",
+                    iconName: "exclamation-triangle",
+                    defaultTitle: localization.getLocal("rota.titlewarn")
+                },
+                _a[0 /* Info */] = {
+                    windowClass: "modal-dialog-info",
+                    iconName: "info-circle",
+                    defaultTitle: localization.getLocal("rota.titleinfo")
+                },
+                _a[3 /* Success */] = {
+                    windowClass: "modal-dialog-success",
+                    iconName: "check-square-o",
+                    defaultTitle: localization.getLocal("rota.titlesuccess")
+                },
+                _a[4 /* Question */] = {
+                    windowClass: "modal-dialog-question",
+                    iconName: "question-circle",
+                    defaultTitle: localization.getLocal("rota.onay")
+                },
+                _a);
+            var _a;
         }
         //#region Dialogs
         /**
@@ -25,25 +70,50 @@ define(["require", "exports"], function (require, exports) {
          */
         Dialogs.prototype.showModal = function (options) {
             var _this = this;
-            if (this.common.isNullOrEmpty(options.templateUrl)) {
+            if (this.common.isNullOrEmpty(options.templateUrl) &&
+                this.common.isNullOrEmpty(options.absoluteTemplateUrl)) {
                 throw new Error(this.constants.errors.MISSING_TEMPLATE_URL);
             }
-            //set temlate path based on baseUrl - works both html and dynamic file server
-            var templateFilePath = this.common.isHtml(options.templateUrl) ?
-                window.require.toUrl(options.templateUrl) : options.templateUrl;
+            //#region Init options
             //default options
             var defaultModalOptions = {
                 keyboard: true,
                 backdrop: 'static',
                 size: 'md',
                 animation: false,
+                isMaximized: false,
+                viewPortSize: false,
+                canMaximized: false,
                 bindToController: true,
                 controllerAs: this.constants.routing.CONTROLLER_ALIAS_NAME,
-                windowClass: 'custom-modal',
-                templateUrl: ''
+                templateUrl: '',
+                windowClass: ''
             };
             //merge default options
-            var modalOptions = angular.extend(defaultModalOptions, options, { templateUrl: templateFilePath });
+            var modalOptions = tslib_1.__assign({}, defaultModalOptions, options);
+            //#endregion
+            //#region Custom styles
+            //sidebar
+            if (options.isSideBar) {
+                modalOptions.windowClass += " " + (options.sideBarPosition || "left");
+                modalOptions.animation = modalOptions.backdrop = true;
+            }
+            //viewport h
+            if (options.viewPortSize) {
+                modalOptions.windowClass += " viewport";
+            }
+            //fullscreen
+            if (options.isMaximized) {
+                modalOptions.windowClass += " modal-fullscreen";
+            }
+            //can be toggled to maximized
+            if (options.canMaximized) {
+                modalOptions.windowClass += " canmaximized";
+            }
+            if ((options.isMaximized || options.canMaximized) && options.isSideBar) {
+                throw new Error("sidebar and maximized features can not be used at the same time");
+            }
+            //#endregion
             //resolve data
             modalOptions.resolve = {
                 instanceOptions: function () { return modalOptions.instanceOptions; },
@@ -54,16 +124,20 @@ define(["require", "exports"], function (require, exports) {
                     };
                 }
             };
-            //load controller file
-            if (modalOptions.controllerUrl) {
-                var cntResolve = this.loader.resolve({ controllerUrl: modalOptions.controllerUrl, templateUrl: templateFilePath });
-                modalOptions.resolve = angular.extend(modalOptions.resolve, cntResolve);
+            //#region Template and controller
+            if (!this.common.isNullOrEmpty(modalOptions.absoluteTemplateUrl)) {
+                return this.$modal.open(tslib_1.__assign({}, modalOptions, { templateUrl: modalOptions.absoluteTemplateUrl })).result;
             }
             //set default controller name if not provided
-            if (!modalOptions.controller) {
+            if (!modalOptions.controller || !modalOptions.controllerUrl) {
                 modalOptions.controller = this.constants.controller.DEFAULT_MODAL_CONTROLLER_NAME;
+                modalOptions.controllerUrl = this.constants.controller.DEFAULT_MODAL_CONTROLLER_PATH;
             }
-            return this.$modal.open(modalOptions).result;
+            //load controller file
+            return this.loader.resolve([modalOptions.templateUrl, modalOptions.controllerUrl], options.host).then(function (result) {
+                return _this.$modal.open(tslib_1.__assign({}, modalOptions, { template: result[0] })).result;
+            });
+            //#endregion
         };
         /**
          * Show simple dialog with ok button
@@ -75,21 +149,23 @@ define(["require", "exports"], function (require, exports) {
                 templateUrl: 'modalSimpleDialog.tpl.html',
                 controller: ['$scope', '$uibModalInstance', 'options',
                     function ($scope, $modalInstance, options) {
-                        $scope.title = options.title || _this.localization.getLocal('rota.onay');
+                        $scope.title = options.title || _this.dialogStyleSettings[options.dialogType].defaultTitle;
                         $scope.message = options.message || '';
+                        $scope.iconName = _this.dialogStyleSettings[options.dialogType || 0 /* Info */].iconName;
                         $scope.okText = options.okText || _this.localization.getLocal('rota.ok');
                         $scope.ok = function () { $modalInstance.close('ok'); };
                     }],
                 keyboard: true,
                 backdrop: 'static',
                 animation: false,
-                windowClass: 'modal-dialog',
+                windowClass: "alert-dialog " + this.dialogStyleSettings[options.dialogType || 0 /* Info */].windowClass,
                 resolve: {
                     options: function () {
                         return {
                             title: options.title,
                             message: options.message,
-                            okText: options.okText
+                            okText: options.okText,
+                            dialogType: options.dialogType
                         };
                     }
                 }
@@ -104,26 +180,30 @@ define(["require", "exports"], function (require, exports) {
             var _this = this;
             var modalOptions = {
                 templateUrl: 'modalDialog.tpl.html',
-                controller: ['$scope', '$uibModalInstance', 'options',
+                controller: options.controller || ['$scope', '$uibModalInstance', 'options',
                     function ($scope, $modalInstance, options) {
                         $scope.title = options.title || _this.localization.getLocal('rota.onay');
                         $scope.message = options.message || '';
                         $scope.okText = options.okText || _this.localization.getLocal('rota.ok');
                         $scope.cancelText = options.cancelText || _this.localization.getLocal('rota.iptal');
+                        $scope.cancel2Text = options.cancel2Text;
+                        $scope.iconName = _this.dialogStyleSettings[options.dialogType || 4 /* Question */].iconName;
                         $scope.ok = function () { $modalInstance.close('ok'); };
-                        $scope.cancel = function () { $modalInstance.dismiss(''); };
+                        $scope.cancel = function (reason) { $modalInstance.dismiss(reason); };
                     }],
                 keyboard: true,
                 backdrop: 'static',
                 animation: false,
-                windowClass: 'modal-confirm',
+                windowClass: "modal-confirm alert-dialog " + this.dialogStyleSettings[options.dialogType || 4 /* Question */].windowClass,
                 resolve: {
                     options: function () {
                         return {
                             title: options.title,
                             message: options.message,
                             okText: options.okText,
-                            cancelText: options.cancelText
+                            cancelText: options.cancelText,
+                            cancel2Text: options.cancel2Text,
+                            dialogType: options.dialogType
                         };
                     }
                 }
@@ -291,7 +371,7 @@ define(["require", "exports"], function (require, exports) {
                 templateUrl: 'reportDialog.tpl.html',
                 controller: ['$scope', '$uibModalInstance', 'Common', 'options',
                     function ($scope, $modalInstance, common, options) {
-                        $scope.reportViewerUrl = options.reportViewerUrl + "?reportName=" + options.reportName;
+                        $scope.reportViewerUrl = common.appendAccessTokenToUrl(options.reportViewerUrl + "?reportName=" + options.reportName);
                         $scope.title = options.title || _this.localization.getLocal('rota.raporonizleme');
                         $scope.message = options.message;
                         $scope.okText = options.okText || _this.localization.getLocal('rota.raporukapat');
@@ -311,14 +391,16 @@ define(["require", "exports"], function (require, exports) {
             };
             return this.$modal.open(modalOptions).result;
         };
-        Dialogs.$inject = ['$rootScope', '$q', '$uibModal', 'Routing', 'Config', 'RouteConfig', 'Common', 'Loader', 'Localization', 'Constants'];
+        Dialogs.injectionName = "Dialogs";
+        Dialogs.$inject = ['$rootScope', '$q', '$uibModal', 'Routing', 'Config', 'RouteConfig', 'Common',
+            'Loader', 'Localization', 'Constants'];
         return Dialogs;
     }());
     exports.Dialogs = Dialogs;
     //#endregion
     //#region Register
     var module = angular.module('rota.services.dialog', ['ui.bootstrap']);
-    module.service('Dialogs', Dialogs);
+    module.service(Dialogs.injectionName, Dialogs);
     module.run([
         '$templateCache', function ($templateCache) {
             //#region Add templates to cache
@@ -335,25 +417,36 @@ define(["require", "exports"], function (require, exports) {
                 '    </div>');
             $templateCache.put('modalSimpleDialog.tpl.html', '    <div class="modal-header">' +
                 '        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-ng-click="cancel()">&times;</button>' +
-                '        <h4><i class="fa fa-question-circle"></i>&nbsp;{{title}}</h4>' +
+                '        <h4><i ng-class="[\'fa\', \'fa-\'+iconName]"></i>&nbsp;{{title}}</h4>' +
                 '    </div>' +
                 '    <div class="modal-body">' +
-                '        <p>{{message}}</p>' +
+                '       <div class="alert-icon">' +
+                '           <i ng-class="[\'fa\',\'fa-3x\', \'fa-\'+iconName]"></i>' +
+                '       </div>' +
+                '       <div class="alert-message">' +
+                '           <p>{{message}}</p>' +
+                '       </div>' +
                 '    </div>' +
                 '    <div class="modal-footer">' +
                 '        <button class="btn btn-primary" data-ng-click="ok()">{{okText}}</button>' +
                 '    </div>');
             //Template olarak cache'de sakla
             $templateCache.put('modalDialog.tpl.html', '    <div class="modal-header">' +
-                '        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-ng-click="cancel()">&times;</button>' +
-                '        <h4><i class="fa fa-question-circle"></i>&nbsp;{{title}}</h4>' +
+                '        <button type="button" class="close" data-dismiss="modal" aria-hidden="true" data-ng-click="cancel(\'dismiss\')">&times;</button>' +
+                '        <h4><i ng-class="[\'fa\', \'fa-\'+iconName]"></i>&nbsp;{{title}}</h4>' +
                 '    </div>' +
                 '    <div class="modal-body">' +
-                '        <p>{{message}}</p>' +
+                '       <div class="alert-icon">' +
+                '           <i ng-class="[\'fa\',\'fa-3x\', \'fa-\'+iconName]"></i>' +
+                '       </div>' +
+                '       <div class="alert-message">' +
+                '           <p>{{message}}</p>' +
+                '       </div>' +
                 '    </div>' +
                 '    <div class="modal-footer">' +
-                '        <button class="btn btn-default" data-ng-click="cancel()">{{cancelText}}</button>' +
-                '        <button class="btn btn-primary" data-ng-click="ok()">{{okText}}</button>' +
+                '        <button class="btn btn-default" data-ng-click="cancel(\'cancel\')">{{cancelText}}</button>' +
+                '        <button ng-if="cancel2Text" class="btn btn-info" data-ng-click="cancel(\'cancel2\')">{{cancel2Text}}</button>' +
+                '        <button class="btn btn-primary" autofocus data-ng-click="ok()">{{okText}}</button>' +
                 '    </div>');
             //Template olarak cache'de sakla
             $templateCache.put('modalPromptDialog.tpl.html', '    <div class="modal-header">' +
@@ -389,10 +482,14 @@ define(["require", "exports"], function (require, exports) {
                 '           <h4><i class="fa fa-file"></i>&nbsp;{{::title}}</h4>' +
                 '       </div>' +
                 '       <div class="modal-body">' +
-                '           <rt-file-upload ng-model="model.file" required accept="{{allowedExtensions}}"></rt-file-upload>' +
-                '           <div ng-if="showImageCroppingArea && model.file" class="cropArea margin-top-5">' +
-                '               <img-crop area-type="square" image="model.file | ngfDataUrl" result-image="model.croppedDataUrl" ng-init="model.croppedDataUrl=\'\'"></img-crop>' +
-                '           </div>' +
+                '          <div class="row">' +
+                '              <div class="col-md-12">' +
+                '                 <rt-file-upload ng-diabled="true" ng-model="model.file" required accept="{{allowedExtensions}}"></rt-file-upload>' +
+                '                 <div ng-if="showImageCroppingArea && model.file" class="cropArea margin-top-5">' +
+                '                     <img-crop area-type="square" image="model.file | ngfDataUrl" result-image="model.croppedDataUrl" ng-init="model.croppedDataUrl=\'\'"></img-crop>' +
+                '                 </div>' +
+                '              </div>' +
+                '          </div>' +
                 '       </div>' +
                 '       <div class="modal-footer">' +
                 '           <button type="button" class="btn btn-default" data-ng-click="dismiss()" i18n="rota.iptal">' +
@@ -406,7 +503,7 @@ define(["require", "exports"], function (require, exports) {
                 '    <div class="modal-body">' +
                 '       <div class="cropArea">' +
                 '           <img-crop area-type="square" image= "imageFile | ngfDataUrl" result-image="croppedDataUrl" ng-init="croppedDataUrl=\'\'"></img-crop>' +
-                '       </div> {{croppedDataUrl}}' +
+                '       </div>' +
                 '    </div>' +
                 '    <div class="modal-footer">' +
                 '        <button type="button" class="btn btn-default" data-ng-click="dismiss()" i18n="rota.iptal">' +
@@ -415,5 +512,4 @@ define(["require", "exports"], function (require, exports) {
             //#endregion
         }
     ]);
-    //#endregion
 });

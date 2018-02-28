@@ -2,23 +2,28 @@
  * date        : 10/18/2016 10:44:09 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseListController } from "rota/base/baselistcontroller";
-import "./urun.api"
-import "../kategori/kategori.api"
+import BaseListController from "rota/base/baselistcontroller";
+import { Controller } from "rota/base/decorators";
+
+import { UrunApi } from "./urun.api"
+import { KategoriApi } from "../kategori/kategori.api"
 //#endregion
 
 /**
  * Your base list controller.Replace IBaseModel and IBaseModelFilter with your own models
  */
+@Controller<IListPageOptions>({
+    registerName: 'urunlerController',
+    editState: 'shell.content.urun',
+    pagingEnabled: false,
+    storeFilterValues: true
+})
 class UrunlerController extends BaseListController<IUrun, IUrunFilter> {
-
-    urunApi: IUrunApi;
-    kategoriApi: IKategoriApi;
-
-    constructor(bundle: IBundle) {
+    constructor(bundle: IBundle,
+        private urunApi: UrunApi,
+        private kategoriApi: KategoriApi) {
         //configure options for your need
-        super(bundle, { editState: 'shell.content.urun', pagingEnabled: false, storeFilterValues: true });
+        super(bundle);
         //Neler orneklendi
         const whatIncluded = [
             "Filtre ile Listeleme sayfası örneği",
@@ -27,7 +32,7 @@ class UrunlerController extends BaseListController<IUrun, IUrunFilter> {
             "<b>ui-grid</b> custom cell formatting",
             "<b>ui-grid</b> custom row formmating işlemi <a href='http://ui-grid.info/docs/#/tutorial/317_custom_templates' target='_blank'>ui-grid custom template</a>"
         ];
-        this.logger.notification.info({
+        this.notification.info({
             message: whatIncluded.join('<br/>'),
             title: 'Bu sayfadaki örnekler'
         });
@@ -76,6 +81,3 @@ class UrunlerController extends BaseListController<IUrun, IUrunFilter> {
     }
     //#endregion
 }
-//#region Register
-App.addController("urunlerController", UrunlerController, "urunApi", "kategoriApi");
-//#endregion

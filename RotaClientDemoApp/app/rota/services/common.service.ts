@@ -1,11 +1,30 @@
-﻿import { ObserableModel } from "../base/obserablemodel";
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import ObserableModel from "../base/obserablemodel";
 import * as _s from "underscore.string";
 //#region Common Service
 class Common implements ICommon {
     serviceName: string = "Common Service";
+    static injectionName = "Common";
 
     //#region Init
-    constructor(private $q: ng.IQService, private $filter: ng.IFilterService, private config: IMainConfig) { }
+    constructor(private $q: ng.IQService, private $filter: ng.IFilterService,
+        private $interpolate: ng.IInterpolateService, private config: IMainConfig,
+        private securityconfig: ISecurityConfig, private tokens: ITokens) { }
     //#endregion
 
     //#region Promise Utils
@@ -13,7 +32,7 @@ class Common implements ICommon {
      * Return promise with provided arg
      * @param p Arg
      */
-    promise<T>(p?: T): ng.IPromise<T> {
+    promise<T=any>(p?: T): ng.IPromise<T> {
         return this.$q.when<T>(p);
     }
     /**
@@ -36,8 +55,30 @@ class Common implements ICommon {
      * Check whether or not provided param is promise
      * @param value Arg
      */
-    isPromise<T>(value: any): value is ng.IPromise<T> {
+    isPromise(value: any): value is ng.IPromise<any> {
         return value && angular.isFunction(value.then);
+    }
+    /**
+    * Process chainable thenable and cancelable functions
+     * @description Note that chain will be ceased when received rejected promise
+    * @param pipeline Thenable functions
+    * @param params Optional parameters
+    */
+    runPromises<T>(pipeline: Array<IChainableMethod<T>>, ...params: any[]): ng.IPromise<T> {
+        let result = this.promise<T>();
+        //iterate pipeline methods
+        for (let i = 0; i < pipeline.length; i++) {
+            result = ((promise: ng.IPromise<any>, method: IChainableMethod<T>) => {
+                return promise.then((response: any): ng.IPromise<T> => {
+                    response && params.push(response);
+                    if (method) {
+                        return method(params);
+                    }
+                    return response;
+                });
+            })(result, pipeline[i]);
+        }
+        return result;
     }
     //#endregion
 
@@ -87,16 +128,44 @@ class Common implements ICommon {
      * @param path Path
      */
     addPrefixSlash(path: string): string {
-        var ilkChar = path && path[0];
+        const ilkChar = path && path[0];
 
         if (ilkChar === '/')
             return path;
         else
             return '/' + path;
     }
+
+    /**
+     * Convert relative url ro absolute url
+     * @param relativeUrl Relative url
+     */
+    toUrl(relativeUrl: string, includeCacheBust: boolean = true): string {
+        const absolutePath = window.require.toUrl(relativeUrl);
+        if (includeCacheBust === false) return absolutePath.split("?")[0];
+        return absolutePath;
+    }
+    /**
+     * Get defined baseurl of requirejs config
+     */
+    getBasePath(): string {
+        return this.toUrl('.').split("?")[0];
+    }
     //#endregion
 
     //#region String Utils
+    /**
+     * Format string using interpolate service
+     * @param src Source string with macros in it
+     * @param context Context obj including macro values
+     * @example
+     * const src = 'Hello {{world}} !';
+     * format(src,{world:'World'});
+     * result => Hello World ! ;
+     */
+    format(src: string, context: any): string {
+        return this.$interpolate(src)(context);
+    }
     /**
      * Guard method checks for string
      * @param value Any object
@@ -115,9 +184,83 @@ class Common implements ICommon {
         }
         return true;
     }
+    /**
+     * Transform text into an ascii slug which can be used in safely in URLs
+     * @param value
+     */
+    slugify(value: string): string {
+        return _s.slugify(value);
+    }
     //#endregion
 
     //#region Utils
+    /**
+     * Flatten simple object to name-value collection
+     * @param filter
+     * @param parentKey
+     */
+    serializeAsNameValuePairs(filter: IDictionary<any>, parentKey: string = ""): INameValueStructure[] {
+        const getKey = (key: string, index?: number): string => {
+            return parentKey ? (this.isAssigned(index) ? `${parentKey}[${index}].${key}` : `${parentKey}.${key}`) : key;
+        }
+        const params = _.reduce<any, INameValueStructure[]>(filter, (memo, value: any, key: string) => {
+            if (_.isArray(value)) {
+                value.forEach((item: INameValueStructure, index) => {
+                    if (_.isObject(item)) {
+                        memo.push({ name: getKey("name", index), value: item.name });
+                        memo.push({ name: getKey("value", index), value: item.value });
+                    } else {
+                        memo.push({ name: getKey(key), value: item });
+                    }
+                });
+            } else
+                if (_.isDate(value))
+                    memo.push({ name: getKey(key), value: value.toISOString() });
+                else
+                    if (_.isObject(value)) {
+                        memo.push(...this.serializeAsNameValuePairs(value, getKey(key)));
+                    }
+                    else
+                        memo.push({ name: getKey(key), value: value });
+            return memo;
+        }, []);
+        return params;
+    }
+    /**
+     * Add access token to url
+     * @param url
+     */
+    appendAccessTokenToUrl(url: string): string {
+        if (this.isNullOrEmpty(this.tokens.accessToken)) return url;
+        return this.updateQueryStringParameter(url,
+            this.securityconfig.accessTokenQueryStringName,
+            this.tokens.accessToken);
+    }
+    /**
+     * Get first item which is not null or undefined
+     * @param args Parameters
+     * @returns {T} Result
+     */
+    iif<T>(...args: T[]): T {
+        for (let item of args) {
+            if (this.isAssigned(item)) {
+                return item;
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Dynamically set favicon
+     * @param iconPath
+     */
+    setFavIcon(iconPath?: string): void {
+        if (!iconPath) iconPath = this.config.favIconName;
+        const link = (document.querySelector("link[rel*='icon']") || document.createElement('link')) as HTMLLinkElement;
+        link.type = 'image/' + (iconPath.split('.').pop() === "ico" ? "x-icon" : "png");
+        link.rel = 'shortcut icon';
+        link.href = iconPath;
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
     /**
      * Check if request is restfull service request
      * @param config Rewurst config
@@ -266,14 +409,21 @@ class Common implements ICommon {
      * @param value Any object
      */
     isAssigned(value: any): boolean {
-        return value !== undefined && value !== null;
+        return [undefined, null].indexOf(value) === -1
     }
     /**
      * Guard method checks for array objects
      * @param value Any object
      */
-    isArray<T>(value: any): value is Array<T> {
+    isArray(value: any): value is Array<any> {
         return value instanceof Array;
+    }
+    /**
+   * Guard method checks for object
+   * @param value
+   */
+    isObject(value: any): value is object {
+        return angular.isObject(value);
     }
     /**
      * Guard method checks for function
@@ -283,10 +433,17 @@ class Common implements ICommon {
         return angular.isFunction(value);
     }
     /**
+     * Guard method checks for number
+     * @param value
+     */
+    isNumber(value: any): value is Number {
+        return angular.isNumber(value);
+    }
+    /**
      * Guard method checks for defined
      * @param value
      */
-    isDefined<T>(value: any): value is T {
+    isDefined(value: any): value is any {
         return angular.isDefined(value);
     }
     /**
@@ -341,6 +498,43 @@ class Common implements ICommon {
     getRandomNumber(): string {
         return ((Date.now() + Math.random()) * Math.random()).toString().replace(".", "");
     }
+    /**
+     *  Update querystring of uri with provided key value
+     * @param uri
+     * @param args
+     */
+    updateQueryStringParameter(uri: string, ...args: any[]): string {
+        let queryStrings: IDictionary<string>;
+        //key: string, value: string
+        if (typeof args[0] === "string") {
+            queryStrings = {
+                [args[0]]: args[1]
+            }
+        } else
+            //params: IDictionary<string>
+            if (typeof args[0] === "object") {
+                queryStrings = args[0];
+            }
+        //iterate params
+        for (let key in queryStrings) {
+            if (queryStrings.hasOwnProperty(key)) {
+                const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+                const separator = uri.indexOf('?') !== -1 ? "&" : "?";
+                if (uri.match(re)) {
+                    uri = uri.replace(re, '$1' + key + "=" + queryStrings[key] + '$2');
+                } else {
+                    uri = uri + separator + key + "=" + queryStrings[key];
+                }
+            }
+        }
+        return uri;
+    }
+    /**
+     * Flag that device is mobile or tablet
+     */
+    isMobileOrTablet(): boolean {
+        return window.__IS_TOUCHABLE;
+    }
     //#endregion
 
     //#region Model Utils
@@ -365,21 +559,24 @@ class Common implements ICommon {
     isCrudModel(model: any): model is IBaseCrudModel {
         return this.isAssigned(model) && this.isAssigned(model.modelState);
     }
-
-    isObserableModel(model: any): model is IObserableModel<IBaseCrudModel> {
-        return this.isAssigned(model) && this.isAssigned(model._gui);
+    /**
+     * Check agaist model is obserable instance
+     * @param model
+     */
+    isObserableModel(model: any): model is IObserableModel<any> {
+        return model instanceof ObserableModel;
     }
     //#endregion
 }
 //#endregion
 
 //#region Injection
-Common.$inject = ['$q', '$filter', 'Config'];
+Common.$inject = ['$q', '$filter', '$interpolate', 'Config', 'SecurityConfig', 'Tokens'];
 //#endregion
 
 //#region Register
 const module: ng.IModule = angular.module('rota.services.common', [])
-    .service('Common', Common);
+    .service(Common.injectionName, Common);
 //#endregion
 
 export { Common }

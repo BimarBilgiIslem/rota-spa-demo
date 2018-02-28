@@ -98,7 +98,7 @@
 
                         if (scope.menu) {
                             scope.menu.remove();
-                            scope.menu     = null;
+                            scope.menu = null;
                             scope.position = null;
                         }
 
@@ -142,16 +142,16 @@
                         $templateRequest($sce.getTrustedResourceUrl(attributes.contextMenu)).then(function then(template) {
 
                             var compiled = $compile(template)($angular.extend(getModel())),
-                                menu     = $angular.element(compiled);
+                                menu = $angular.element(compiled);
 
                             // Determine whether to append new, or replace an existing.
                             switch (strategy) {
-                                case ('append'): angular.element($document.body).append(menu); break;
-                                default: scope.menu.replaceWith(menu); break;
+                            case ('append'): angular.element($document.body).append(menu); break;
+                            default: scope.menu.replaceWith(menu); break;
                             }
 
                             menu.css({
-                                position: 'fixed',
+                                position: 'absolute',
                                 top: 0,
                                 left: 0,
                                 transform: $interpolate('translate({{x}}px, {{y}}px)')({

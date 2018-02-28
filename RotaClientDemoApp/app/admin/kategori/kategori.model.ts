@@ -4,12 +4,8 @@
     ustKategoriAdi?: string;
 }
 
-interface IKategoriFilter extends IBaseModelFilter {
+interface IKategoriFilter extends IBaseListModelFilter {
     kategoriAdi?: string;
     ustKategoriId?: number;
 }
 
-interface IKategoriApi extends IBaseCrudApi<IKategori> {
-    listeyiAl(filter: IKategoriFilter): IP<IKategori[]>;
-    kategoriKaydet(model: IKategori): IP<ICrudServerResponseData>;
-}

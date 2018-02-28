@@ -1,9 +1,26 @@
-﻿/**
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
  * Creates custom validators used by controllers.
  */
 class Validators implements IValidators {
     //#region Props
     serviceName: 'Validator Service';
+    static injectionName = "Validators";
     /**
     * Custom Validators
     */
@@ -31,6 +48,7 @@ class Validators implements IValidators {
         if (!item.func)
             throw new Error(this.constants.errors.NO_VALIDATION_FUNC_DEFINED);
 
+        //#region Defaults
         if (!item.order) {
             item.order = this.validators.length + 1;
         }
@@ -42,6 +60,7 @@ class Validators implements IValidators {
         if (!item.triggerOn) {
             item.triggerOn = TriggerOn.Action | TriggerOn.Changes;
         }
+        //#endregion
 
         this.validators.push(item);
         return this;
@@ -111,7 +130,7 @@ Validators.$inject = ['Common', 'Constants'];
 
 //#region Register
 var module: ng.IModule = angular.module('rota.services.validators', []);
-module.service('Validators', Validators);
+module.service(Validators.injectionName, Validators);
 //#endregion
 
 export { Validators }

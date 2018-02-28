@@ -2,26 +2,21 @@
  * date        : 10/18/2016 10:44:29 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseCrudController } from "rota/base/basecrudcontroller";
+import BaseCrudController from "rota/base/basecrudcontroller";
+import { Controller } from "rota/base/decorators";
 //moment
 import * as moment from "moment";
 //Fiziksel olarak api dosyalarını define dependency listesine ekliyoruz
-import "./urun.api"
-import "../kategori/kategori.api"
+import { UrunApi } from "./urun.api"
+import { KategoriApi } from "../kategori/kategori.api"
 //#endregion
 const DEFAULT_IMAGE_URI = "content/img/default.jpg";
 /**
  * Your base crud controller.Replace IBaseCrudModel with your own model
  */
+@Controller<ICrudPageOptions>({ registerName: 'urunController' })
 class UrunController extends BaseCrudController<IUrun> {
     //#region Genel değişkenler
-    //kullanılan api'ler
-    //BURDA DIKKAT EDİLMESİ GEREKEN NOKTA,SERVİS INSTANCE İSİMLERİ CAMELCASE OLMALI
-    //ORNEK :"CurrentUser" --> currentUser
-    urunApi: IUrunApi;
-    kategoriApi: IKategoriApi;
-    currentUser: IUser;
     //Sabitler
     defaultImgUri = DEFAULT_IMAGE_URI;
     //Diger global değişkenler
@@ -32,13 +27,13 @@ class UrunController extends BaseCrudController<IUrun> {
     //#endregion
 
     //#region Init
-    constructor(bundle: IBundle) {
+    constructor(bundle: IBundle, private urunApi: UrunApi, private kategoriApi: KategoriApi, ) {
         //configure options for your need
-        super(bundle, {});
+        super(bundle);
         //Yeni kategori modal ayarlari
         this.yeniKategoriModalAyarlari = {
             templateUrl: 'admin/kategori/kategori.modal.html',
-            instanceOptions: { services: ['kategoriApi'] }
+            instanceOptions: { services: [{ instanceName: 'kategoriApi', injectionName: KategoriApi.injectionName }] }
         }
         //custom validators
         this.validators.addValidation({ func: this.stokMiktariKontrol, triggerOn: TriggerOn.Action })
@@ -75,7 +70,7 @@ class UrunController extends BaseCrudController<IUrun> {
     urunKoduKontrolu(args: IValidationArgs): IP<IValidationResult> {
         if (!args.modelValue || args.modelValue.length === 0) return this.common.promise();
 
-        return this.urunApi.getList({ kodu: args.modelValue })
+        return this.urunApi.getList<IUrunFilter>({ kodu: args.modelValue })
             .then((urunler) => {
                 if (urunler.length > 0)
                     return this.common.rejectedPromise<IValidationResult>({
@@ -113,7 +108,7 @@ class UrunController extends BaseCrudController<IUrun> {
      * @description this.initSaveModel() ile manuel tetiklenebilir
      * @param options Save options
      */
-    saveModel(options: ISaveOptions): ng.IPromise<ICrudServerResponseData | IParserException> {
+    saveModel(options: ISaveOptions): ng.IPromise<ICrudServerResponseData> {
         //save your model
         return this.urunApi.save(options.jsonModel as IUrun);
     }
@@ -139,7 +134,7 @@ class UrunController extends BaseCrudController<IUrun> {
      * @description Yeni kayit inital degerlerin atilmasinda kullanilabilir.
      * @param clonedModel Eger kopyalama yapılıyorsa clonedModel true gelir
      */
-    newModel(clonedModel?: IUrun): angular.IPromise<IUrun> | IUrun {
+    newModel(clonedModel?: IUrun): IUrun {
         const model = super.newModel(clonedModel) as IUrun;
         model.birimFiyat = 0;
         model.stokMiktari = 1;
@@ -239,6 +234,3 @@ class UrunController extends BaseCrudController<IUrun> {
     }
     //#endregion
 }
-//#region Register
-App.addController("urunController", UrunController, "urunApi", "kategoriApi", "CurrentUser");
-//#endregion

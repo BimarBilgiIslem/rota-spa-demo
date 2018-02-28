@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "moment"], function (require, exports, moment) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Directive
     function calloutDirective($position, $timeout, $filter, common, constants, localization, config) {
@@ -69,11 +85,11 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
                                     break;
                                 case "min":
                                     //ngCurrency
-                                    errorMessages.unshift(hatalidegermin.replace('{0}', $filter('currency')(attrs.minValue || constants.MIN_NUMBER_VALUE, '', 0)));
+                                    errorMessages.unshift(hatalidegermin.replace('{0}', $filter('currency')(attrs.minValue || attrs.min || constants.MIN_NUMBER_VALUE, '', 0)));
                                     break;
                                 case "max":
                                     //ngCurrency
-                                    errorMessages.unshift(hatalidegermax.replace('{0}', $filter('currency')(attrs.maxValue || constants.MAX_NUMBER_VALUE, '', 0)));
+                                    errorMessages.unshift(hatalidegermax.replace('{0}', $filter('currency')(attrs.maxValue || attrs.max || constants.MAX_NUMBER_VALUE, '', 0)));
                                     break;
                                 case attrs.rtValidator:
                                     errorMessages.unshift(scope[attrs.rtValidator]);
@@ -98,5 +114,4 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
     //#region Register
     angular.module('rota.directives.rtcallout', [])
         .directive('rtCallout', calloutDirective);
-    //#endregion
 });

@@ -1,0 +1,119 @@
+﻿#sub-header {
+    background: $sub-header-bg;
+    border-bottom: $sub-header-border-bottom;
+    padding-top: 8px;  
+
+    .content-header {
+        position: relative;
+        height: $sub-header-content-height;
+
+        .badges, .breadcrumb, .title, .current-company, .actions {
+            position: absolute;
+        }
+
+        .badges {
+            margin-bottom: 6px;
+            left: 0;
+
+            > span {
+                margin-right: 2px;
+                border-radius: 0;
+                color: #fff;
+                display: inline-block;
+                padding: .2em .6em .3em;
+                line-height: 1;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: baseline;
+
+                &.danger {
+                    background: $badge-danger-bg;
+                }
+
+                &.info {
+                    background: $badge-info-bg;
+                }
+
+                &.success {
+                    background: $badge-success-bg;
+                }
+
+                &.warning {
+                    background: $badge-warning-bg;
+                }
+            }
+        }
+
+        .breadcrumb {
+            margin-bottom: 0;
+            display: inline-block;
+            border-radius: 0;
+            bottom: 0;
+            right: 99px;
+
+            &:after {
+                clear: both;
+            }
+
+            a {
+                color: $breadcrumb-color;
+            }
+        }
+
+        .title {
+            color: $sub-header-title;
+            font-weight: bold;
+            text-shadow: 1px 2px rgba(51, 51, 51, 0.75);
+            font-size: $sub-header-title-size;
+            background: $sub-header-title-bg;
+            padding: $sub-header-padding;
+            display: inline-block;
+            bottom: 0;
+            left: 0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .current-company {
+            color: $sub-header-company-color;
+            padding: $sub-header-company-padding;
+            background: $sub-header-company-bg;
+            display: inline-block;
+            margin-bottom: 5px;
+            right: 0;
+            top: 0;
+        }
+
+        .actions {
+            margin-left: 3px;
+            margin-bottom: 0;
+            padding: 0;
+            right: 0;
+            bottom: 0;
+
+            li {
+                list-style: none;
+                display: inline-block;
+                float: right;
+            }
+
+
+            &:after {
+                clear: both;
+            }
+
+            a {
+                color: $breadcrumb-color;
+                padding: 4px 10px;
+                display: inline-block;
+                background-color: $sub-header-actions-bg;
+
+                @media (min-width:$grid-float-breakpoint) {
+                    &:hover {
+                        background-color: lighten($sub-header-actions-bg,10%);
+                    }
+                }
+            }
+        }
+    }
+}

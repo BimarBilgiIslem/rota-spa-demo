@@ -1,8 +1,24 @@
-define(["require", "exports", 'jquery'], function (require, exports, $) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "jquery"], function (require, exports, $) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Select Directive
-    function selectDirective($parse, $injector, $q, $sce, localization, common, logger, dialogs, rtSelectI18N, constants) {
+    function selectDirective($document, $parse, $injector, $q, $sce, $timeout, localization, common, logger, dialogs, rtSelectI18N, constants, uiGridEditConstants) {
         function compile(cElement, cAttrs) {
             var isAutoSuggest = angular.isDefined(cAttrs.onRefresh);
             //#region Validations
@@ -16,7 +32,7 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
             }
             //#endregion
             //#region Dom manupulations
-            var $choices = $('ui-select-choices', cElement), $match = $('ui-select-match', cElement), $row = $("<div/>");
+            var $uiSelect = $('ui-select', cElement), $choices = $('ui-select-choices', cElement), $match = $('ui-select-match', cElement), $row = $("<div/>"), inGridCell = !!$(cElement).parent('.ui-grid-cell').length;
             if (isAutoSuggest) {
                 $choices.attr('repeat', 'listItem in listItems' +
                     (angular.isDefined(cAttrs.valueProp) ? ' track by listItem.' + cAttrs.valueProp : ' track by $index'))
@@ -56,6 +72,13 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
             else {
                 $match.html("<span ng-bind-html=\"$select.selected." + cAttrs.displayProp + "\"></span>");
             }
+            //add to body if run in ui-grid 
+            if (inGridCell) {
+                $uiSelect.attr('append-to-body', 'true');
+            }
+            if (angular.isDefined(cAttrs.multiLine)) {
+                $uiSelect.attr('multi-line', 'true');
+            }
             //#endregion
             return function (scope, element, attrs, modelCtrl) {
                 //#region Init attrs
@@ -91,6 +114,19 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
                 }
                 //Unique focus event name
                 scope.focusEventName = "rt-select-focus:" + common.getRandomNumber();
+                //quit edit mode in grid if selected or clicked outside 
+                //https://plnkr.co/edit/ckQhv5bWha2jte5wDBI1?p=preview
+                if (inGridCell) {
+                    var docClick_1 = function (evt) {
+                        if ($(evt.target).closest('.ui-select-container').length === 0) {
+                            $timeout(function () {
+                                scope.$emit(uiGridEditConstants.events.END_CELL_EDIT);
+                                $document.off('click', docClick_1);
+                            }, 0);
+                        }
+                    };
+                    $document.on("click", docClick_1);
+                }
                 //#endregion
                 //#region Utility Methods
                 /**
@@ -291,7 +327,8 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
                         //force getById if defined
                         if (common.isAssigned(scope.onGet))
                             bindItemById(modelValue).then(function (model) {
-                                setModel(model);
+                                if (model && model.length > 0)
+                                    setModel(model[0]);
                             });
                         else {
                             logger.console.warn({ message: 'item not found by ' + modelValue });
@@ -312,6 +349,11 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
                  */
                 scope.$watchCollection('items', function (newValue) {
                     if (common.isAssigned(newValue)) {
+                        //convert enum obj to array
+                        if (!common.isArray(newValue)) {
+                            valuePropGetter = $parse(constants.select.OBJ_VALUE_PROP_NAME);
+                            newValue = common.convertEnumToArray(newValue);
+                        }
                         asyncModelRequestResult = common.promise(newValue);
                         setItems(newValue);
                         if (common.isAssigned(modelCtrl.$modelValue)) {
@@ -346,14 +388,14 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
                     scope.runNewItem = function ($event) {
                         if (scope.ngDisabled)
                             return;
-                        var instanceOptions = {};
-                        instanceOptions.params = scope.params || {};
-                        if (common.isAssigned(scope.newItemOptions.instanceOptions)) {
-                            instanceOptions.services = scope.newItemOptions.instanceOptions.services;
+                        if (!scope.newItemOptions.instanceOptions)
+                            scope.newItemOptions.instanceOptions = {};
+                        scope.newItemOptions.instanceOptions.params =
+                            angular.extend(scope.newItemOptions.instanceOptions.params || {}, scope.params);
+                        if (!scope.newItemOptions.instanceOptions.model) {
+                            scope.newItemOptions.instanceOptions.model = common.newCrudModel();
+                            scope.newItemOptions.instanceOptions.model.modelState = 4 /* Added */;
                         }
-                        scope.newItemOptions.instanceOptions = instanceOptions;
-                        scope.newItemOptions.instanceOptions.model = common.newCrudModel();
-                        scope.newItemOptions.instanceOptions.model.modelState = 4 /* Added */;
                         dialogs.showModal(scope.newItemOptions).then(function (response) {
                             if (response) {
                                 var entity = response.entity;
@@ -440,8 +482,8 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
         //#endregion
     }
     //#region Injections
-    selectDirective.$inject = ['$parse', '$injector', '$q', '$sce', 'Localization', 'Common', 'Logger',
-        'Dialogs', 'rtSelectI18N', 'Constants'];
+    selectDirective.$inject = ['$document', '$parse', '$injector', '$q', '$sce', '$timeout', 'Localization', 'Common', 'Logger',
+        'Dialogs', 'rtSelectI18N', 'Constants', 'uiGridEditConstants'];
     //#endregion
     //#endregion
     //#region Select Filter
@@ -500,9 +542,10 @@ define(["require", "exports", 'jquery'], function (require, exports, $) {
                 'on-select="onItemSelect($item, $model)" theme="select2">' +
                 '<ui-select-match allow-clear="{{allowClear}}"></ui-select-match>' +
                 '<ui-select-choices rt-select-disable-animation></ui-select-choices></ui-select>' +
-                '<a href ng-if="newItemOptions" ng-click="runNewItem($event)" class="input-group-addon"><i class="fa fa-plus-circle"></i></a>' +
-                '<a href ng-if="searchItemsOptions" ng-click="searchItems($event)" class="input-group-addon"><i class="fa fa-search"></i></a></div>');
+                '<span ng-if="newItemOptions" class="input-group-btn"><button ng-click="runNewItem($event)" class="btn btn-default">' +
+                '<i class="fa fa-plus-circle"></i></button></span>' +
+                '<span ng-if="searchItemsOptions" class="input-group-btn"><button  ng-click="searchItems($event)" class="btn btn-default">' +
+                '<i class="fa fa-search"></i></button></span></div>');
         }
     ]);
-    //#endregion
 });

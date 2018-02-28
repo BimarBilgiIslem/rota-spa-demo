@@ -1,17 +1,33 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 import "signalr.hubs"
 //#endregion
 /**
  * SignalR helper hub class in conjuction with server hub
  */
-class Hub<TMethods extends {}, TListeners extends {}> implements IHub<TMethods, TListeners> {
+class Hub<TMethods> implements IHub<TMethods> {
     //#region Static Methods
     private static globalConnections: SignalR.Connection[] = [];
     /**
      * Create new connnection for negotition
      * @param options Hub Options
      */
-    private static initNewConnection(options: IHubOptions<any>): SignalR.Hub.Connection {
+    private static initNewConnection(options: IHubOptions): SignalR.Hub.Connection {
         let connection = null;
         if (options && options.rootPath) {
             connection = $.hubConnection(options.rootPath, { useDefaultPath: false });
@@ -25,7 +41,7 @@ class Hub<TMethods extends {}, TListeners extends {}> implements IHub<TMethods, 
      * Get connection
      * @param options
      */
-    private static getConnection(options: IHubOptions<any>): SignalR.Hub.Connection {
+    private static getConnection(options: IHubOptions): SignalR.Hub.Connection {
         const useSharedConnection = !(options && options.useSharedConnection === false);
         if (useSharedConnection) {
             return typeof Hub.globalConnections[options.rootPath] === 'undefined' ?
@@ -46,7 +62,7 @@ class Hub<TMethods extends {}, TListeners extends {}> implements IHub<TMethods, 
     //#endregion
 
     //#region Init
-    constructor(hubName: string, private options: IHubOptions<TListeners>) {
+    constructor(hubName: string, private options: IHubOptions) {
         this.connection = Hub.getConnection(options);
         this.proxy = this.connection.createHubProxy(hubName);
         this.methods = {} as TMethods;

@@ -1,0 +1,10 @@
+﻿i.rt-info {
+    color: $rt-info-color;
+    font-size: 1.275em;
+    margin-right: 3px;
+    transition: .2s color ease;
+
+    &:hover {
+        color: darken($rt-info-color,20);
+    }
+}

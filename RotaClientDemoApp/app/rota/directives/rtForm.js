@@ -1,14 +1,30 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     function formDirective() {
         var directive = {
             replace: true,
             restrict: 'EA',
             transclude: true,
             template: function (element, attrs) {
-                return attrs.name ? "<div ng-form=\"" + attrs.name + "\" isolate-form ng-init=\"vm.initFormScope(this)\"><ng-transclude></ng-transclude></div>" :
+                return attrs.name ? "<div ng-form=\"" + attrs.name + "\" isolate-form ng-init=\"vm.initFormScope(this)\">\n                <fieldset ng-disabled=\"vm.isFormDisabled\"><ng-transclude></ng-transclude></fieldset></div>" :
                     '<form class="form-horizontal" name="vm.formScope.rtForm" disable-enter novalidate ng-init="vm.initFormScope(this)">' +
-                        '<ng-transclude></ng-transclude></form>';
+                        '<fieldset ng-disabled="vm.isFormDisabled"><ng-transclude></ng-transclude></fieldset></form>';
             }
         };
         return directive;
@@ -71,5 +87,4 @@ define(["require", "exports"], function (require, exports) {
         .directive('rtForm', formDirective)
         .directive('isolateForm', isolateForm)
         .directive('disableEnter', disableEnter);
-    //#endregion
 });

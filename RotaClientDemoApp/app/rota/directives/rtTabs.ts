@@ -1,4 +1,20 @@
-﻿//#region Ui-Tabs wrapper
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Ui-Tabs wrapper
 //#region Tabs Controller
 class TabsController {
     /**
@@ -9,6 +25,10 @@ class TabsController {
      * Tabs
      */
     tabs: ITab[];
+    /**
+     * Active tab index
+     */
+    activeIndex: number = 0;
     /**
      * Tab selected event
      * @param tab Selected Tab
@@ -68,19 +88,21 @@ class TabsController {
                 this.logger.console.warn({ message: state + ' not found' });
                 return;
             }
+            tab.index = i++;
             tab.badgeType = tab.badgeType || 'alert-info';
             tab.params = tab.params || {};
             tab.disable = tab.disable;
-            tab.active = this.isActive(tab) && !tab.disable;
+            if (this.isActive(tab) && !tab.disable) {
+                this.activeIndex = tab.index;
+            }
             tab.heading = tab.heading || state.hierarchicalMenu.title;
             tab.icon = tab.icon || state.hierarchicalMenu.menuIcon;
-            if (state.hierarchicalMenu.isStickyTab) {
+            if (state.sticky) {
                 tab.tabViewName = tab.tabViewName || state.name;
             } else {
                 tab.tabViewName = 'nosticky';
                 this.isShowRelativeView = true;
             }
-            tab.index = ++i;
         });
     }
 }
@@ -106,9 +128,9 @@ function tabsDirective() {
             onSelected: '&'
         },
         scope: true,
-        template: '<div class="rt-tabs"><uib-tabset class="tab-container" type="{{tabvm.type}}" vertical="{{tabvm.vertical}}" ' +
+        template: '<div class="rt-tabs"><uib-tabset active="tabvm.activeIndex" class="tab-container" type="{{tabvm.type}}" vertical="{{tabvm.vertical}}" ' +
         'justified="{{tabvm.justified}}">' + '<uib-tab index="tab.index" class="tab" ng-repeat="tab in tabvm.tabs track by tab.state"' +
-        'active="tab.active" disable="tab.disable" ng-click="tabvm.go(tab)">' +
+        'disable="tab.disable" ng-click="tabvm.go(tab)">' +
         '<uib-tab-heading><i ng-class="[\'fa\', \'fa-\' + tab.icon]"></i> {{::tab.heading}}' +
         '<span ng-show="tab.badge" class="tabbadge badge" ng-class="tab.badgeType">{{tab.badge}}</span> </uib-tab-heading>' +
         '</uib-tab></uib-tabset>' +

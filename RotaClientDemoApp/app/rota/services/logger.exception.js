@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "./logger.service"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Client Error Tracker
     var exceptionHandler = function ($delegate, $injector, config) {
@@ -40,14 +56,15 @@ define(["require", "exports", "./logger.service"], function (require, exports) {
             ;
             loggerService = loggerService || $injector.get('Logger');
             //toastr and notification log
-            loggerService.toastr.error({ message: exception.message });
-            loggerService.notification.error({ message: exception.message });
+            var errorMsg = typeof exception === "string" ? exception : exception.message;
+            loggerService.toastr.error({ message: errorMsg });
+            loggerService.notification.error({ message: errorMsg });
         };
     };
     exceptionHandler.$inject = ['$delegate', '$injector', 'Config'];
     //#endregion
     //#region Server Error Tracker
-    var errorHttpInterceptorService = function ($q, logger, config) {
+    var errorHttpInterceptorService = function ($q, $rootScope, logger, config, constants) {
         //display server error messages
         var concatErrorMessages = function (exception) {
             if (angular.isString(exception)) {
@@ -75,27 +92,30 @@ define(["require", "exports", "./logger.service"], function (require, exports) {
             responseError: function (response) {
                 //Istemci hatasi 4xx ve Sunucu hatalari 5xx
                 //Bad Requests,Internal Server Errors
-                if (response.status >= 400 && response.status <= 500) {
-                    /********************************************************/
-                    var message = "Unknown error occured";
-                    //customize 404 messages
-                    if (response.status === 404) {
-                        message = "'<b>" + response.config.url + "</b>' not found on the server";
+                if (!response.config.byPassErrorInterceptor) {
+                    if (response.status >= 400 && response.status <= 500) {
+                        /********************************************************/
+                        var message = void 0;
+                        //customize 404 messages
+                        if (response.status === 404) {
+                            message = "'<b>" + response.config.url + "</b>' not found on the server";
+                        }
+                        else {
+                            message = concatErrorMessages(response.data);
+                        }
+                        logger.notification.error({ message: message });
+                        /********************************************************/
                     }
-                    else {
-                        message = concatErrorMessages(response.data);
+                    else if (response.status === 0) {
+                        //no response from server
+                        logger.notification.error({ message: 'Server connection lost' });
                     }
-                    logger.notification.error({ message: message });
-                }
-                else if (response.status === 0) {
-                    //no response from server
-                    logger.notification.error({ message: 'Server connection lost' });
                 }
                 return $q.reject(response);
             }
         };
     };
-    errorHttpInterceptorService.$inject = ['$q', 'Logger', 'Config'];
+    errorHttpInterceptorService.$inject = ['$q', '$rootScope', 'Logger', 'Config', 'Constants'];
     //#endregion
     //#region Register
     var module = angular.module('rota.services.log');

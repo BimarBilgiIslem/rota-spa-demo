@@ -1,16 +1,24 @@
-﻿
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 //#region Shortcuts
 /**
  * Promise shortcut
  */
-interface IP<T> extends ng.IPromise<T> {
-}
-/**
- * Promise shortcut
- */
-interface IPany extends ng.IPromise<any> {
-}
-
+type IP<T> = ng.IPromise<T>;
 //#endregion
 
 //#region Common Interfaces
@@ -20,13 +28,19 @@ interface IPany extends ng.IPromise<any> {
 interface IRotaRootScope extends ng.IRootScopeService {
     appTitle: string;
     forms: any;
-    isCollapsed: boolean;
 }
 /**
  * Used for chainable promise function
  */
 interface IChainableMethod<T> {
     (...args: any[]): ng.IPromise<T>;
+}
+/**
+ * Common interface for various sitiuations
+ */
+interface INameValueStructure {
+    name: string;
+    value: any;
 }
 /**
  * Result structure returned after caching file in server
@@ -127,6 +141,16 @@ interface IDictionary<T extends {}> {
  */
 interface ICommon extends IBaseService {
     /**
+   * Add access token to url
+   * @param url
+   */
+    appendAccessTokenToUrl(url: string): string;
+    /**
+     * Dynamically set favicon
+     * @param iconPath if falsy is passed,config.favIconName will be assigned
+     */
+    setFavIcon(iconPath?: string): void;
+    /**
      * Check if request is restfull service request
      * @param config Rewurst config
      * @returns {boolean} 
@@ -162,6 +186,11 @@ interface ICommon extends IBaseService {
      */
     isNotEmptyObject(value: any): boolean;
     /**
+     * Transform text into an ascii slug which can be used in safely in URLs
+     * @param value
+     */
+    slugify(value: string): string;
+    /**
      * Set model's property to some value incursivly
      * @param model Model
      * @param fieldName Field name
@@ -174,10 +203,22 @@ interface ICommon extends IBaseService {
      */
     getUniqueNumber(): number;
     /**
+     * Flatten simple object to name-value collection
+     * @param filter
+     * @param parentKey
+     */
+    serializeAsNameValuePairs(filter: IDictionary<any>, parentKey?: string): INameValueStructure[];
+    /**
+     * Get first item which is not null or undefined
+     * @param args Parameters
+     * @returns {T} Result
+     */
+    iif<T>(...args: T[]): T;
+    /**
     * Return promise with provided arg
     * @param p Arg
     */
-    promise<T>(p?: T): ng.IPromise<T>;
+    promise<T=any>(p?: T): ng.IPromise<T>;
     /**
     * Return rejected promise with reason
     * @param reason Arg
@@ -192,7 +233,13 @@ interface ICommon extends IBaseService {
     * Check whether or not provided param is promise
     * @param value Arg
     */
-    isPromise<T>(value: any): value is ng.IPromise<T>;
+    isPromise(value: any): value is ng.IPromise<any>;
+    /**
+   * Process chainable thenable functions
+   * @param pipeline Thenable functions
+   * @param params Optional parameters
+   */
+    runPromises<T>(pipeline: Array<IChainableMethod<T>>, ...params: any[]): ng.IPromise<T>;
     /**
    * Check whether or not provided value ends with html extension
    * @param value Arg
@@ -227,7 +274,7 @@ interface ICommon extends IBaseService {
     * Check whether model is valid obserable
     * @param model
     */
-    isObserableModel(model: any): model is IObserableModel<IBaseCrudModel>;
+    isObserableModel(model: any): model is IObserableModel<any>;
     /**
      * Get a new crud model 
      * @param props
@@ -244,6 +291,8 @@ interface ICommon extends IBaseService {
      * @param extensions Destinations of T
      */
     extend<TSource>(source: TSource, ...extensions: any[]): TSource;
+    //TODO:partial neden calişmıyor ?
+    //extend<TSource>(source: TSource, ...extensions: Partial<TSource>[]): TSource;
     /**
     * Merge source with all destinations
     * @param source Source of TSource
@@ -266,10 +315,20 @@ interface ICommon extends IBaseService {
      */
     isString(value: any): value is string;
     /**
+     * Guard method checks for object
+     * @param value
+     */
+    isObject(value: any): value is object;
+    /**
+     * Guard method checks for number
+     * @param value
+     */
+    isNumber(value: any): value is Number;
+    /**
    * Guard method checks for array objects
    * @param value Any object
    */
-    isArray<T>(value: any): value is Array<T>;
+    isArray(value: any): value is Array<any>;
     /**
     * Guard method checks for function
     * @param value
@@ -279,7 +338,7 @@ interface ICommon extends IBaseService {
      * Guard method checks for defined
      * @param value
      */
-    isDefined<T>(value: any): value is T;
+    isDefined(value: any): value is any;
     /**
     * Convert html to plain text
     * @param html Html  
@@ -304,5 +363,43 @@ interface ICommon extends IBaseService {
      * Generate unique number
      */
     getRandomNumber(): string;
+    /**
+     * Update querystring of uri with provided key value
+     * @param uri
+     * @param key
+     * @param value
+     * @returns {string}
+     */
+    updateQueryStringParameter(uri: string, key: string, value: string): string;
+    /**
+     * Update querystring of uri with provided key value object
+     * @param uri 
+     * @param params 
+     * @returns {string} 
+     */
+    updateQueryStringParameter(uri: string, params: IDictionary<string | number | boolean>): string;
+    /**
+    * Flag that device is mobile or tablet
+    */
+    isMobileOrTablet(): boolean;
+    /**
+     * Format string using interpolate service
+     * @param src Source string with macros in it
+     * @param context Context obj including macro values
+     * @example
+     * const src = 'Hello {{world}} !';
+     * format(src,{world:'World'});
+     * result => Hello World ! ;
+     */
+    format(src: string, context: any): string;
+    /**
+    * Convert relative url ro absolute url
+    * @param relativeUrl Relative url
+    */
+    toUrl(relativeUrl: string, includeCacheBust?: boolean): string;
+    /**
+     * Get defined baseurl of requirejs config
+     */
+    getBasePath(): string;
 }
 //#endregion

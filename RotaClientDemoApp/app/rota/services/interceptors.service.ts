@@ -1,4 +1,24 @@
-﻿//#region Request Tracker
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
+import App from "config/app";
+//#endregion
+
+//#region Request Tracker
 const httpRequestTrackerService = ($q: ng.IQService,
     $location: ng.ILocationService,
     $rootScope: ng.IRootScopeService,
@@ -59,36 +79,30 @@ httpRequestTrackerService.$inject = ['$q', '$location', '$rootScope', '$timeout'
 
 //#region Request Wrapper - All request wrappers must be coded in this interceptor
 const requestWrapperInterceptor = ($q: ng.IQService, localization: ILocalization,
-    currentCompany: ICompany, common: ICommon, constants: IConstants): ng.IHttpInterceptor => {
+    currentCompany: ICompany, constants: IConstants, mainConfig: IMainConfig): ng.IHttpInterceptor => {
     return {
         request: (config: ng.IRequestConfig) => {
-            if (common.isApiRequest(config)) {
-                config.headers[constants.server.HEADER_NAME_LANGUAGE] = localization.currentLanguage.code;
-                if (currentCompany) {
-                    if (currentCompany.roleId)
-                        config.headers[constants.server.HEADER_NAME_ROLE_ID] = currentCompany.roleId.toString();
-                    if (currentCompany.companyId)
-                        config.headers[constants.server.HEADER_NAME_COMPANY_ID] = currentCompany.companyId.toString();
+            //TODO:Add headers to only restful service request if (common.isApiRequest(config)) 
+            config.headers[constants.server.HEADER_NAME_LANGUAGE] = localization.currentLanguage.code;
+            if (currentCompany && mainConfig.requestHeaderMaps) {
+                //custom company values
+                for (let key in mainConfig.requestHeaderMaps) {
+                    if (mainConfig.requestHeaderMaps.hasOwnProperty(key) && currentCompany[key]) {
+                        config.headers[mainConfig.requestHeaderMaps[key]] = currentCompany[key];
+                    }
                 }
             }
             return $q.when(config);
         }
     };
 }
-requestWrapperInterceptor.$inject = ['$q', 'Localization', 'CurrentCompany', 'Common', 'Constants'];
+requestWrapperInterceptor.$inject = ['$q', 'Localization', 'CurrentCompany', 'Constants', 'Config'];
 //#endregion
 
 //#region Security Interceptor
 const securityInterceptor = ($rootScope: IRotaRootScope, $q: ng.IQService,
     config: IMainConfig, securityConfig: ISecurityConfig, tokens: ITokens, common: ICommon): ng.IHttpInterceptor => {
     return {
-        request: (config: ng.IRequestConfig) => {
-            if (securityConfig.antiForgeryTokenEnabled &&
-                tokens.antiForgeryToken && common.isApiRequest(config)) {
-                config.headers[securityConfig.antiForgeryTokenHeaderName] = tokens.antiForgeryToken;
-            }
-            return $q.when(config);
-        },
         responseError: response => {
             if (response.status === 401 && !response.config.ignoreAuthModule) {
                 $rootScope.$broadcast(config.eventNames.loginRequired);
@@ -110,11 +124,13 @@ module.factory('httpAjaxInterceptor', httpRequestTrackerService)
         $httpProvider.interceptors.push('httpAjaxInterceptor');
         $httpProvider.interceptors.push('requestWrapperInterceptor');
         //#region fix for IE caching problem
+        //http://stackoverflow.com/questions/16098430/angular-ie-caching-issue-for-http
         if (!$httpProvider.defaults.headers.get) {
             $httpProvider.defaults.headers.get = {};
         }
         $httpProvider.defaults.headers.get['Cache-Control'] = 'no-cache';
         $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
+        $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
         //#endregion
     }]);
 //#endregion

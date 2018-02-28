@@ -1,7 +1,22 @@
-define(["require", "exports", "./rtMenu", "./rtSpinner", "./rtGrid", "./rtPanel", "./rtForm", "./rtButton", "./rtListButtons", "./rtCrudButtons", "./rtI18n", "./rtFocus", "./rtSelect", "./rtMultiSelect", "./rtEditor", "./rtNumber", "./rtDatePicker", "./rtDateRange", "./rtTabs", "./rtTextCase", "./rtFileUpload", "./rtMultiFileUpload", "./rtInclude", "./rtReportButtons", "./rtTree", "./rtDraggableModal", "./rtCallout", "./rtValidator"], function (require, exports) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "./rtSpinner", "./rtGrid", "./rtPanel", "./rtForm", "./rtButton", "./rtListButtons", "./rtCrudButtons", "./rtI18n", "./rtFocus", "./rtSelect", "./rtMultiSelect", "./rtEditor", "./rtNumber", "./rtDatePicker", "./rtDateRange", "./rtTabs", "./rtTextCase", "./rtFileUpload", "./rtMultiFileUpload", "./rtInclude", "./rtReportButtons", "./rtDraggableModal", "./rtCallout", "./rtValidator", "./rtDashboard", "./rtIdleTimeout", "./rtNavMenu", "./rtNotification", "./rtNavProfile", "./rtAvatar", "./rtDownload", "./rtSticky", "./rtInfo", "./rtPagePreview", "./rtContent", "./rtCopyToClipboard"], function (require, exports) {
     "use strict";
-    angular.module('rota.directives', ['rota.directives.rtmenu',
-        'rota.directives.rtspinner',
+    Object.defineProperty(exports, "__esModule", { value: true });
+    angular.module('rota.directives', ['rota.directives.rtspinner',
         'rota.directives.rtgrid',
         'rota.directives.rtpanel',
         'rota.directives.rtbutton',
@@ -22,9 +37,20 @@ define(["require", "exports", "./rtMenu", "./rtSpinner", "./rtGrid", "./rtPanel"
         'rota.directives.rtmultifileupload',
         'rota.directives.rtinclude',
         'rota.directives.rtreportbuttons',
-        'rota.directives.rttree',
         'rota.directives.rtdraggablemodal',
         'rota.directives.rtcallout',
-        'rota.directives.rtvalidator'
+        'rota.directives.rtvalidator',
+        'rota.directives.rtdashboard',
+        'rota.directives.rtidletimeout',
+        'rota.directives.rtnavmenu',
+        'rota.directives.rtnotification',
+        'rota.directives.rtnavprofile',
+        'rota.directives.rtavatar',
+        'rota.directives.rtdownload',
+        'rota.directives.rtsticky',
+        'rota.directives.rtinfo',
+        'rota.directives.rtpagepreview',
+        'rota.directives.rtcontent',
+        'rota.directives.rtcopytoclipboard'
     ]);
 });

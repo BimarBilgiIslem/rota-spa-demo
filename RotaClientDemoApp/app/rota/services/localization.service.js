@@ -1,19 +1,36 @@
-define(["require", "exports", 'i18n!rota-resources/nls/resources', 'i18n!app-resources/nls/resources', 'underscore', 'i18n!rota-resources/nls/moment-lang'], function (require, exports, rotaresource, appresource, _) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "i18n!rota-resources/nls/resources", "i18n!app-resources/nls/resources", "i18n!rota-resources/nls/moment-lang"], function (require, exports, rotaresource, appresource) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Localization Service
     var Localization = (function () {
-        function Localization($window, $interpolate, resources, config, constants) {
+        function Localization($injector, $window, $interpolate, resources, config, constants, currentUser) {
+            this.$injector = $injector;
             this.$window = $window;
             this.$interpolate = $interpolate;
             this.resources = resources;
             this.config = config;
             this.constants = constants;
+            this.currentUser = currentUser;
             //#region Props
             this.serviceName = "Localization Service";
-            var currentLangCode = $window.localStorage.getItem(constants.localization.ACTIVE_LANG_STORAGE_NAME) ||
-                constants.localization.DEFAULT_LANGUAGE;
-            this._currentLanguage = _.findWhere(this.config.supportedLanguages, { code: currentLangCode });
+            //Init culture 
+            this._currentLanguage = this.config.supportedLanguages.firstOrDefault(function (lang) { return lang.code === window.__CULTURE.toLowerCase(); });
         }
         Object.defineProperty(Localization.prototype, "currentLanguage", {
             /**
@@ -28,7 +45,10 @@ define(["require", "exports", 'i18n!rota-resources/nls/resources', 'i18n!app-res
             set: function (value) {
                 if (value === this.currentLanguage)
                     return;
-                this.$window.localStorage.setItem(this.constants.localization.ACTIVE_LANG_STORAGE_NAME, value.code);
+                if (!this.config.supportedLanguages.any(function (lang) { return lang.code === value.code.toLowerCase(); })) {
+                    throw new Error("'" + value.code + "' not supported culture.(allowed 'en-us' or 'tr-tr')");
+                }
+                this.$window.localStorage.setItem(this.constants.localization.ACTIVE_LANG_STORAGE_NAME, value.code.toLowerCase());
                 this.$window.location.reload();
             },
             enumerable: true,
@@ -37,7 +57,7 @@ define(["require", "exports", 'i18n!rota-resources/nls/resources', 'i18n!app-res
         Localization.prototype.getLocal = function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i - 0] = arguments[_i];
+                args[_i] = arguments[_i];
             }
             //if no param provided return with null
             if (args.length === 0)
@@ -87,18 +107,18 @@ define(["require", "exports", 'i18n!rota-resources/nls/resources', 'i18n!app-res
             };
             return extractValue(this.resources);
         };
+        Localization.injectionName = "Localization";
         //#endregion
         //#region Init
-        Localization.$inject = ['$window', '$interpolate', 'Resource', 'Config', 'Constants'];
+        Localization.$inject = ['$injector', '$window', '$interpolate', 'Resource', 'Config', 'Constants', 'CurrentUser'];
         return Localization;
     }());
     exports.Localization = Localization;
     //#endregion
     //#region Register
     var module = angular.module('rota.services.localization', []);
-    module.service('Localization', Localization);
+    module.service(Localization.injectionName, Localization);
     module.factory('Resource', function () {
-        return angular.extend({}, appresource, rotaresource);
+        return angular.merge({}, rotaresource, appresource);
     });
-    //#endregion
 });

@@ -22,11 +22,7 @@ interface IIliskiliUrun extends IBaseCrudModel {
     iliskiliUrunId: number;
 }
 
-interface IUrunFilter extends IBaseModelFilter {
+interface IUrunFilter extends IBaseListModelFilter {
     urunAdi?: string;
     kodu?: string;
-}
-
-interface IUrunApi extends IBaseCrudApi<IUrun> {
-    minStokMiktari: number;
 }

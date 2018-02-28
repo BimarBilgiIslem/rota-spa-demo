@@ -1,4 +1,20 @@
-﻿//TODO:region ?
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Global Environment
 /**
  * Environment settings
  */
@@ -24,9 +40,25 @@ interface IGlobalEnvironment {
      */
     authority: string;
     /**
-     * Allow anouynmous access
+     *Scope
      */
-    allowAnonymousAccess: boolean;
+    scope: string;
+    /**
+    * Redirecting uri for unauthorized requests
+    */
+    redirectUri?: string;
+    /**
+     * Default uri to redirect after successful authorization
+     */
+    postLogoutRedirectUri?: string;
+    /**
+     * Silently update user path
+     */
+    silentRedirectUri?: string;
+    /**
+     * Clock skew in sec
+     */
+    clockSkew?: number;
     /**
      * Elmah logging enabled client exceptions
      */
@@ -44,17 +76,54 @@ interface IGlobalEnvironment {
      */
     reportControllerUrl?: string;
     /**
-     * Show model panel
-     */
-    showModelDebugPanel?: boolean;
-    /**
-     * EntiForgerytokenEnabled flag
-     */
-    antiForgeryTokenEnabled?: boolean;
-    /**
      * Cross Domain root Paths,like https://xdomain.com
      */
-    xDomPaths?: { [index: string]: string };
+    doms?: IDictionary<string>;
+    /**
+     * Logoff when idle timeout has reached by prompting user,default true
+     */
+    logOffWhenIdleTimeout?: boolean;
+    /**
+     * Default push service root path
+     */
+    pushServicePath?: string;
+    /**
+     * First module to load on load,default startup.
+     */
+    startupModuleName?: string;
+    /**
+     * whether or not legitimate the user on startup by checking id_token
+     */
+    allowAnonymous?: boolean;
+    /**
+     * Server rendered inital data
+     */
+    initialData?: IDictionary<any>;
+    /**
+     * Base url for shell state,default "/"
+     */
+    baseUrl?: string;
+}
+//#endregion
+
+//#region Main Config
+
+/**
+ * App global settings
+ */
+interface IAppConfig {
+    /**
+     * Main app settings
+     */
+    main?: IMainConfig;
+    /**
+     * App OIDC security settings
+     */
+    security?: ISecurityConfig;
+    /**
+     * App routing settings
+     */
+    routing?: IRouteConfig;
 }
 /**
  * Common event names used through the app
@@ -77,10 +146,6 @@ interface IEvents {
      */
     ajaxFinished: string;
     /**
-     * Fired when menu changed programtically/manually
-     */
-    menuChanged: string;
-    /**
      * Fired when model loaded in BaseModelController
      */
     modelLoaded: string;
@@ -89,19 +154,46 @@ interface IEvents {
  * Date time formats used in rtDatetime directive
  */
 interface IDateTimeFormat {
-    timeFormat: string;
-    dateFormat: string;
-    monthFormat: string;
-    yearFormat: string;
+    //All date Formats
+    timeFormat?: string;
+    dateFormat?: string;
+    monthFormat?: string;
+    yearFormat?: string;
     /**
     * Minute step value default 5
     */
     datePickerTimeMinStep?: number;
+    /**
+     * Append offset value for converting to json,default true
+     */
+    useTimeZoneOffSet?: boolean;
+}
+/**
+ * CRUD Api action names
+ * @description See defaults in constants
+ */
+interface ICrudActionNames {
+    getList: string;
+    getById: string;
+    getPagedList: string;
+    exportList: string;
+    save: string;
+    delete: string;
+}
+/**
+ * DashBoard Setttings
+ */
+interface IDashboardSettings {
+    widgetLoadingTemplate?: string;
 }
 /**
  * Main config settings
  */
 interface IMainConfig extends IBaseConfig {
+    /**
+     * CRUD Api action names
+     */
+    crudActionNames?: ICrudActionNames;
     /**
      * Api path used when there is only one api in use
      */
@@ -131,6 +223,19 @@ interface IMainConfig extends IBaseConfig {
      */
     debugMode?: boolean;
     /**
+     * RequireJS path of cuurent host defined in global environment
+     */
+    host?: string;
+    /**
+    * Menu help link uri
+    * @description If not provided,help menu will be removed
+    */
+    helpLinkUri?: string;
+    /**
+     * Profile page url
+     */
+    profileLinkUri?: string;
+    /**
      * Common event names
      */
     eventNames?: IEvents;
@@ -143,18 +248,22 @@ interface IMainConfig extends IBaseConfig {
      */
     gridDefaultOptionsName?: string;
     /**
-     * Grid Full feature list
-     */
-    gridFullFeatureList?: string;
-    /**
      * Grid standart features list
      */
-    gridStandartFeatureList?: string;
+    gridStandartFeatureList?: string[];
     /**
      * Supported languages
      * @description if new lang is added,nls folder must be updaded accordingly in resource 
      */
     supportedLanguages?: ILanguage[];
+    /**
+     * Flag that indicates application will support multi language,default true
+     */
+    enableMultiLanguage?: boolean;
+    /**
+     * User predefined language
+     */
+    culture?: ISupportedCultures;
     /**
      * Exception will be logged to Elmah db
      */
@@ -180,10 +289,6 @@ interface IMainConfig extends IBaseConfig {
      */
     reportControllerUrl?: string;
     /**
-     * Show company name on stratup next to avatar/user name
-     */
-    showCompanyName?: boolean;
-    /**
      * Home page options
      */
     homePageOptions?: IHomePageOptions;
@@ -191,12 +296,72 @@ interface IMainConfig extends IBaseConfig {
      * AutoSave interval in ms,default 
      */
     autoSaveInterval?: number;
+    /**
+     * Dashboard settings
+     */
+    dashboardOptions?: IDashboardSettings;
+    /**
+     * Logo Image file name.It must be under ~/Content/img - default place_holder.png
+     */
+    logoImageName?: string;
+    /**
+     * Logo Image file name.It must be under ~/Content/img - default logoImageName
+     */
+    footerLogoImageName?: string;
+    /**
+     * Favicon name,relative image path with ico/png ext
+     */
+    favIconName?: string;
+    /**
+     * Warning favicon name,relative image path with ico/png ext
+     */
+    warnFavIconName?: string;
+    /**
+     * Default push service root path
+     */
+    pushServicePath?: string;
+    /**
+     * Enable quick menu feature,default true
+     */
+    enableQuickMenu?: boolean;
+    /**
+     * Max file upload size,edfault 20 MB
+     */
+    maxFileUploadSize?: string;
+    /**
+    * Encodes all storages values with Base64 encoding,default true for prod
+    */
+    encodeStorageValues?: boolean;
+    /**
+     * Use enableContainerFluid for a full width container, spanning the entire width of your viewport.
+     */
+    enableContainerFluid?: boolean;
+    /**
+     * Spinner options
+     */
+    spinnerOptions?: SpinnerOptions;
+    /**
+     * Feedback provider url,if defined,feedback form will
+     * be display and POST request made to that endpoint
+     */
+    feedBackProviderUrl?: string;
+    /**
+    * Request headers
+    */
+    requestHeaderMaps?: RequestHeaders;
+    /**
+     * Vendor ng-module names
+     */
+    dependencyModuleNames?: string[];
 }
 /**
  * Main config provider
  */
 interface IMainConfigProvider extends IBaseConfigProvider<IMainConfig> {
 }
+//#endregion
+
+//#region Home Settings
 /**
  * HomePage settings
  */
@@ -223,3 +388,30 @@ interface IVideoOptions {
     urlOgg?: string;
     poster: string;
 }
+//#endregion
+
+//#region OIDC
+interface IOidcManager {
+    user: Oidc.User;
+    init(settings: IOidcSettings): Promise<Oidc.User>;
+    signOut(): void;
+}
+
+interface IOidcSettings {
+    authority: string;
+    clientId: string;
+    redirectUri?: string;
+    silentRedirectUri?: string;
+    scope?: string;
+    postLogoutRedirectUri?: string;
+    clockSkew?: number;
+    lang?: string;
+}
+//#endregion
+
+//#region Custom Headers
+type CustomHeaders<T> = {
+    [TP in keyof T]?: string;
+}
+type RequestHeaders = CustomHeaders<ICompany>;
+//#endregion

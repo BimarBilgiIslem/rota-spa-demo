@@ -1,36 +1,40 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/basecontroller", "admin/urun/urun.api", "./vitrin.api"], function (require, exports, app_1, basecontroller_1) {
+define(["require", "exports", "tslib", "rota/base/basecontroller", "rota/base/decorators", "admin/urun/urun.api", "./vitrin.api"], function (require, exports, tslib_1, basecontroller_1, decorators_1, urun_api_1, vitrin_api_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     var VitrinController = (function (_super) {
-        __extends(VitrinController, _super);
-        function VitrinController(bundle) {
-            var _this = this;
-            _super.call(this, bundle);
-            this.urunApi.getList()
+        tslib_1.__extends(VitrinController, _super);
+        function VitrinController(bundle, urunApi, vitrinApi) {
+            var _this = _super.call(this, bundle) || this;
+            _this.urunApi = urunApi;
+            _this.vitrinApi = vitrinApi;
+            urunApi.getList()
                 .then(function (urunler) {
                 _this.urunler = urunler;
             });
+            return _this;
         }
         VitrinController.prototype.sepeteEkle = function (urun, adet) {
             if (urun.stokMiktari < adet) {
-                return this.logger.toastr.error({ message: 'Stok miktarından fazla sipariş veremezsiniz' });
+                this.toastr.error({ message: 'Stok miktarından fazla sipariş veremezsiniz' });
+                return;
             }
             this.vitrinApi.sepeteEkle(urun, adet);
         };
         VitrinController.prototype.sepetiGoster = function () {
             this.dialogs.showModal({
                 templateUrl: 'edukkan/vitrin/sepet.html',
-                instanceOptions: { services: ['vitrinApi'], params: { sepetim: this.vitrinApi.sepetim } }
+                instanceOptions: {
+                    services: [{ injectionName: vitrin_api_1.VitrinApi.injectionName, instanceName: 'vitrinApi' }],
+                    params: { sepetim: this.vitrinApi.sepetim }
+                }
             });
         };
+        VitrinController = tslib_1.__decorate([
+            decorators_1.Controller("vitrinController"),
+            tslib_1.__metadata("design:paramtypes", [Object, urun_api_1.UrunApi,
+                vitrin_api_1.VitrinApi])
+        ], VitrinController);
         return VitrinController;
-    }(basecontroller_1.BaseController));
-    //#region Register
-    app_1.App.addController("vitrinController", VitrinController, "urunApi", "Caching", "vitrinApi");
+    }(basecontroller_1.default));
 });
-//#endregion 

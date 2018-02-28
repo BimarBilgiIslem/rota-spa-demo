@@ -1,9 +1,26 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 import "./logger.service"
 //#endregion
 
 //#region Client Error Tracker
-const exceptionHandler = ($delegate: ng.IExceptionHandlerService, $injector: ng.auto.IInjectorService, config: IMainConfig) => {
+const exceptionHandler = ($delegate: ng.IExceptionHandlerService, $injector: ng.auto.IInjectorService,
+    config: IMainConfig) => {
     let loggerService: ILogger;
     let httpService: ng.IHttpService;
     let $rootScope: ng.IRootScopeService;
@@ -29,27 +46,29 @@ const exceptionHandler = ($delegate: ng.IExceptionHandlerService, $injector: ng.
         throw err;
     };
 
-    return (exception: IException, cause?: string) => {
+    return (exception: IException | string, cause?: string) => {
         if (config.debugMode) {
-            $delegate(exception, cause);
+            $delegate(exception as IException, cause);
         } else {
             if (config.serverExceptionLoggingEnabled) {
                 try {
-                    serverLogger(exception);
+                    serverLogger(exception as IException);
                 } catch (e) { }
             }
         };
         loggerService = loggerService || $injector.get<ILogger>('Logger');
         //toastr and notification log
-        loggerService.toastr.error({ message: exception.message });
-        loggerService.notification.error({ message: exception.message });
+        const errorMsg = typeof exception === "string" ? exception : exception.message;
+        loggerService.toastr.error({ message: errorMsg });
+        loggerService.notification.error({ message: errorMsg });
     };
 };
 exceptionHandler.$inject = ['$delegate', '$injector', 'Config'];
 //#endregion
 
 //#region Server Error Tracker
-var errorHttpInterceptorService = ($q: ng.IQService, logger: ILogger, config: IMainConfig) => {
+var errorHttpInterceptorService = ($q: ng.IQService, $rootScope: IRotaRootScope,
+    logger: ILogger, config: IMainConfig, constants: IConstants) => {
     //display server error messages
     const concatErrorMessages = (exception: IServerFailedResponseData | string): string => {
         if (angular.isString(exception)) {
@@ -78,26 +97,28 @@ var errorHttpInterceptorService = ($q: ng.IQService, logger: ILogger, config: IM
         responseError: (response: IBaseServerResponse<IServerFailedResponseData>) => {
             //Istemci hatasi 4xx ve Sunucu hatalari 5xx
             //Bad Requests,Internal Server Errors
-            if (response.status >= 400 && response.status <= 500) {
-                /********************************************************/
-                let message = "Unknown error occured";
-                //customize 404 messages
-                if (response.status === 404) {
-                    message = `'<b>${response.config.url}</b>' not found on the server`;
-                } else {
-                    message = concatErrorMessages(response.data);
+            if (!(response.config as IRequestOptions).byPassErrorInterceptor) {
+                if (response.status >= 400 && response.status <= 500) {
+                    /********************************************************/
+                    let message;
+                    //customize 404 messages
+                    if (response.status === 404) {
+                        message = `'<b>${response.config.url}</b>' not found on the server`;
+                    } else {
+                        message = concatErrorMessages(response.data);
+                    }
+                    logger.notification.error({ message: message });
+                    /********************************************************/
+                } else if (response.status === 0) {
+                    //no response from server
+                    logger.notification.error({ message: 'Server connection lost' });
                 }
-                logger.notification.error({ message: message });
-                /********************************************************/
-            } else if (response.status === 0) {
-                //no response from server
-                logger.notification.error({ message: 'Server connection lost' });
             }
             return $q.reject(response);
         }
     };
 }
-errorHttpInterceptorService.$inject = ['$q', 'Logger', 'Config'];
+errorHttpInterceptorService.$inject = ['$q', '$rootScope', 'Logger', 'Config', 'Constants'];
 //#endregion
 
 //#region Register

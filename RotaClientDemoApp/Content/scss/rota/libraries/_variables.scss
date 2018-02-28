@@ -9,7 +9,6 @@ $rota-gray-base: #000 !default;
 $gray-darker: lighten($rota-gray-base, 13.5%) !default; // #222
 $gray-dark: lighten($rota-gray-base, 40%) !default; // #333
 $gray: $gray-darker;
-$dropdown-header-color: #fff;
 /*#endregion */
 
 /*#region Rota */
@@ -22,14 +21,27 @@ $sub-header-title-bg: #628eab !default;
 $sub-header-padding: 5px 15px 5px 15px !default;
 $sub-header-quickmenu-color: #fff !default;
 $sub-header-quickmenu-font-size: .8em !default;
+$sub-header-content-height: 60px !default;
+//footer
+$footer-bg-color: #f5f2f2 !default;
+$footer-color: #666 !default;
 //current company
 $sub-header-company-color: #fff !default;
 $sub-header-company-padding: 4px 9px !default;
-$sub-header-company-bg: #ccc !default;
+$sub-header-company-bg: #a94442 !default;
+//actions
+$sub-header-actions-bg: $sub-header-title-bg !default;
+//side nav bar
+$side-nav-header-bg: $sub-header-title-bg !default;
+$side-nav-header-color: #fff !default;
+$side-nav-item-header: #ebebeb !default;
 //content
 $full-screen-padding: 0 10px !default;
 //avatar
-$avatar-size: 35px !default;
+$avatar-size-large: 43px !default;
+$avatar-size-medium: 35px !default;
+$avatar-size-small: 22px !default;
+$avatar-first-letter-bg: #d9534f !default;
 //margin
 $unit-values: 2,5,10 !default;
 //component
@@ -48,7 +60,7 @@ $rt-select-selected-bg: #b94a48 !default;
 $rt-select-selected-hover-bg: #f5f5f5 !default;
 $rt-select-bg-image: url('/Content/img/select2.png') right top no-repeat;
 //breadcrumb
-$breadcrumb-bg: rgba(240, 173, 78, 0.77) !default;
+$breadcrumb-bg: $sub-header-title-bg !default;
 $breadcrumb-padding-vertical: 4px !default;
 $breadcrumb-color: #fff !default;
 //badges
@@ -60,4 +72,17 @@ $badge-warning-bg: #f0ad4e !default;
 $rt-callout-bg: #a70606 !default;
 $rt-callout-color: #fff !default;
 $rt-callout-shadow: 1px 1px rgba(191, 183, 183, 0.63) !default;
+//rtTabs color
+$rt-tabs-color: #5aa1cb !default;
+//grid
+$grid-scroll-base-color: #fff !default;
+//break points
+$grid-float-breakpoint: 992px !default;
+//nav profile
+$nav-sticky-min-width: 355px !default;
+//rt-info
+$rt-info-color: #3c8dbc !default;
 /*#endregion */
+
+
+

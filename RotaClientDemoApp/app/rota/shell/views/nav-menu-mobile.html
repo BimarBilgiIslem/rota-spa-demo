@@ -1,0 +1,74 @@
+﻿<div class="modal-header text-center">
+    <a class="close" href ng-click="profilevm.close()"><i class="fa fa-times"></i></a>
+    <rt-avatar></rt-avatar>
+    <h4>{{::profilevm.currentUser.fullname| textcase:'title'}}</h4>
+    <small>{{::profilevm.currentCompany.companyName | htmltoplaintext}}</small>
+</div>
+<div class="modal-body">
+    <uib-tabset>
+        <uib-tab>
+            <uib-tab-heading>
+                <i class="fa fa-folder-open-o"></i> {{::"rota.menuler" | i18n}}
+            </uib-tab-heading>
+            <div class="list-group">
+                <a href class="list-group-item header" ng-click='profilevm.displayNextLevel(profilevm.parentMenu.parent)'
+                   ng-show="profilevm.parentMenu">
+                    <span class="fa fa-chevron-left"></span>
+                    <b>{{ profilevm.parentMenu.text }}...</b>
+                </a>
+                <a class="list-group-item" ng-class="{'rota-animate':profilevm.initiated}" ng-if="menu.text !== 'divider'" ng-repeat="menu in profilevm.currentMenus"
+                   ng-click='profilevm.displayNextLevel(menu)' ng-href="{{menu.url}}">
+                    {{menu.text}}
+                    <span ng-show="menu.subtree && menu.subtree.length > 0" class="fa fa-chevron-right pull-right"></span>
+                </a>
+            </div>
+        </uib-tab>
+        <uib-tab>
+            <uib-tab-heading>
+                <i class="fa fa-database"></i> {{::"rota.sirketler" | i18n}}
+            </uib-tab-heading>
+            <div class="list-group">
+                <a href ng-repeat="company in profilevm.securityconfig.authorizedCompanies" class="list-group-item"
+                   ng-click="profilevm.setCompany(company)" ng-class="{'active-company':profilevm.currentCompany.id == company.id}">
+                    <i class="fa fa-fw text-success" ng-class="{'fa-check' : profilevm.currentCompany.id == company.id}"></i>
+                    <span ng-bind-html="company.companyName"></span>
+                </a>
+            </div>
+        </uib-tab>
+        <uib-tab>
+            <uib-tab-heading>
+                <i class="fa fa-cogs"></i> {{::"rota.ayarlar" | i18n}}
+            </uib-tab-heading>
+            <div class="list-group">
+                <a href class="list-group-item header" i18n="rota.diller" ng-show="profilevm.config.enableMultiLanguage">
+                </a>
+                <a href ng-show="profilevm.config.enableMultiLanguage" class="list-group-item"
+                   ng-repeat="language in profilevm.config.supportedLanguages" ng-click="profilevm.changeLanguage(language)"
+                   ng-class="{'active-language':profilevm.localization.currentLanguage.code==language.code}">
+                    <i class="fa fa-fw text-success" ng-class="{'fa-check' : profilevm.localization.currentLanguage.code==language.code}"></i>
+                    <img alt="" ng-src="/Content/img/{{::language.code}}.png">
+                    {{::language.fullname}}
+                </a>
+                <a href class="list-group-item header" i18n="rota.ayarlar">
+                </a>
+                <a href class="list-group-item" ng-if="profilevm.securityconfig.avatarUploadUri" ng-click="profilevm.changeAvatar()">
+                    <i class="fa fa-picture-o fa-fw"></i>
+                    {{::"rota.fotodegistir" | i18n}}
+                </a>
+                <a class="list-group-item" ng-href="{{profilevm.helpLink}}" ng-if="profilevm.helpLink">
+                    <i class="fa fa-support fa-fw"></i>
+                    {{::"rota.yardim" | i18n}}
+                </a>
+                <a href class="list-group-item" ng-click="profilevm.showFeedBackForm()" ng-if="profilevm.config.feedBackProviderUrl">
+                    <i class="fa fa-bullhorn fa-fw"></i>
+                    {{::"rota.geribildirim" | i18n}}
+                </a>
+                <a href class="list-group-item" ng-click="profilevm.logOff()">
+                    <i class="fa fa-sign-out fa-fw"></i>
+                    {{::"rota.logout" | i18n}}
+                </a>
+            </div>
+        </uib-tab>
+    </uib-tabset>
+</div>
+

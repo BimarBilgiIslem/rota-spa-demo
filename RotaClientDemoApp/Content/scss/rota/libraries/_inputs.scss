@@ -1,27 +1,23 @@
-﻿//controls font
-/*#{$all-text-inputs} {
-    font-weight: bold;
-}*/
-//controls placeholder
+﻿//controls placeholder
 @include placeholder-content {
     font-weight: normal;
+    font-family: $font-family-base;
 }
-
-/*label {
-    color: rgb(138, 137, 137);
-    font-weight: normal;
-
-    > input[type=checkbox] + span {
-        display: inline-block;
-        margin-top: 2px;
-    }
-}*/
 
 input {
-    &[type="radio"], &[type="checkbox"] {
+    &[type="radio"], &[type="checkbox"], &[type="radio"] ~ label, &[type="checkbox"] ~ label {
         cursor: pointer;
     }
+
+    &::-ms-clear {
+        display: none;
+    }
 }
+
+.form-control {
+    @include box-shadow(none); // Redeclare so transitions work
+}
+
 
 input.ng-invalid,
 textarea.ng-invalid {

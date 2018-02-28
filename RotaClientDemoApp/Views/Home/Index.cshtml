@@ -1,4 +1,4 @@
-﻿@using RotaClientDemoApp.Helper
+﻿@using RotaSPA_Client.Helper
 @{
     Layout = null;
     var debugging = !Html.IsReleaseBuild();
@@ -17,43 +17,88 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="">
     <meta name="author" content="Bimar">
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans&subset=latin,latin-ext" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="/">
 
-    @if (debugging)
-    {
-        <link href="~/Content/css/site.css" rel="stylesheet" />
-    }
-    else
-    {
-        <link href="~/Content/css/index.min.css" rel="stylesheet" />
-    }
+    <style>
+        .spinner {
+            margin: 100px auto;
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
 
-    <title ng-bind-template="{{appTitle}}"></title>
+        .cube1, .cube2 {
+            background-color: #333;
+            width: 15px;
+            height: 15px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            -webkit-animation: sk-cubemove 1.8s infinite ease-in-out;
+            animation: sk-cubemove 1.8s infinite ease-in-out;
+        }
+
+        .cube2 {
+            -webkit-animation-delay: -0.9s;
+            animation-delay: -0.9s;
+        }
+
+        @@-webkit-keyframes sk-cubemove {
+            25% {
+                -webkit-transform: translateX(42px) rotate(-90deg) scale(0.5);
+            }
+
+            50% {
+                -webkit-transform: translateX(42px) translateY(42px) rotate(-180deg);
+            }
+
+            75% {
+                -webkit-transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5);
+            }
+
+            100% {
+                -webkit-transform: rotate(-360deg);
+            }
+        }
+
+        @@keyframes sk-cubemove {
+            25% {
+                transform: translateX(42px) rotate(-90deg) scale(0.5);
+                -webkit-transform: translateX(42px) rotate(-90deg) scale(0.5);
+            }
+
+            50% {
+                transform: translateX(42px) translateY(42px) rotate(-179deg);
+                -webkit-transform: translateX(42px) translateY(42px) rotate(-179deg);
+            }
+
+            50.1% {
+                transform: translateX(42px) translateY(42px) rotate(-180deg);
+                -webkit-transform: translateX(42px) translateY(42px) rotate(-180deg);
+            }
+
+            75% {
+                transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5);
+                -webkit-transform: translateX(0px) translateY(42px) rotate(-270deg) scale(0.5);
+            }
+
+            100% {
+                transform: rotate(-360deg);
+                -webkit-transform: rotate(-360deg);
+            }
+        }
+    </style>
+
+
+    <title ng-bind-template="{{appTitle}}" ng-cloak></title>
 </head>
 <body>
     @*Infinite progress bar*@
 
-    <div class="container text-center" id="progressBar">
-        <img src="~/Content/img/edukkan-greeting.png" />
-        <p></p>
-
-        <div class="progress progress-striped">
-            <div class="progress-bar progress-bar-custom active" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 100%;">
-                <span class="sr-only">Yükleniyor</span>
-            </div>
-        </div>
-
-
-        @*<div class="progress center-block">
-                <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%; ">
-                    <span>
-                        Loading...
-                    </span>
-                </div>
-            </div>*@
+    <div class="spinner" id="progressBar">
+        <div class="cube1"></div>
+        <div class="cube2"></div>
     </div>
 
     <!--[if lt IE 7]>
@@ -68,17 +113,14 @@
                 debugging = "@debugging" === "True",
                 enableJsCaching = @Html.GetSetting("enableJsCaching", "true");
 
+            var isAnonymousAccess = location.pathname.indexOf("yetkisiz") > -1 ;
+
             var globalSettings = {
                 appVersion: appVersion,
                 debugging: debugging,
                 cacheBusting: enableJsCaching ? ("v=" + (debugging ? (new Date()).getTime() : appVersion)) : undefined,
-                clientId: "@Html.GetSetting("clientId")",
-                authority: "@Html.GetSetting("authority")",
-                allowAnonymousAccess: @Html.GetSetting("allowAnonymousAccess", "true"),
-                elmahLoggingEnabled: @Html.GetSetting("elmahLoggingEnabled", "false"),
-                reportViewerUrl: "@Html.GetSetting("reportViewerUrl")",
-                reportControllerUrl: "@Html.GetSetting("reportControllerUrl")",
-                showModelDebugPanel: @Html.GetSetting("showModelDebugPanel", "false")
+                clientId:  "@Html.GetSetting("clientId")",
+                authority: "@Html.GetSetting("authority")"
                 }; //caching
             //Export
             w.__globalEnvironment = w.__globalEnvironment || globalSettings;
@@ -87,11 +129,11 @@
 
     @if (debugging)
     {
-        <script src="~/app/rota/core/require.js" data-main="/app/rota/config/main"></script>
+        <script src="app/rota/core/require.js" data-main="/app/rota/config/main"></script>
     }
     else
     {
-        <script src="~/dist/rota/core/require.js" data-main="/dist/rota/config/main"></script>
+        <script src="dist/rota/core/require.js" data-main="/dist/rota/config/main"></script>
     }
 </body>
 </html>

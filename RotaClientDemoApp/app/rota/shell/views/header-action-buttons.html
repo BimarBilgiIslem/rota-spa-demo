@@ -1,0 +1,16 @@
+﻿<ul class="actions">
+    <li>
+        <a href ng-click="shellvm.routing.reload()" uib-tooltip="{{::'rota.yenile' | i18n}}"
+           tooltip-append-to-body="true" tooltip-placement="bottom"><i class="fa fa-refresh"></i></a>
+    </li>
+    <li ng-if="shellvm.config.enableQuickMenu">
+        <a href ng-click="shellvm.routing.addCurrentMenuToQuickMenus()" uib-tooltip="{{::'rota.hizlimenuekle' | i18n}}"
+           tooltip-append-to-body="true" tooltip-placement="bottom">
+            <i class="fa" ng-class="shellvm.routing.activeMenu.isQuickMenu ? 'fa-star':'fa-star-o'"></i>
+        </a>
+    </li>
+    <li>
+        <a href ng-click="shellvm.routing.goBack()" uib-tooltip="{{::'rota.geridon' | i18n}}"
+           tooltip-append-to-body="true" tooltip-placement="bottom"><i class="fa fa-arrow-left"></i></a>
+    </li>
+</ul>

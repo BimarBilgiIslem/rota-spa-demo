@@ -1,33 +1,40 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "underscore", "underscore.string", "moment"], function (require, exports, _, _s, moment) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Obserablemodel responsible for tracking property changes and managing modelState algorithm
      */
-    var ObserableModel = (function (_super) {
-        __extends(ObserableModel, _super);
-        function ObserableModel(initialValues) {
-            _super.call(this);
+    var ObserableModel = (function () {
+        function ObserableModel(initialValues, _parentModel) {
+            this._parentModel = _parentModel;
             //set initial values
             this._id = 0;
             this._modelState = 1 /* Detached */;
             this._gui = _.uniqueId('model_');
-            this._values =
-                this._orginalValues = {};
+            this._values = {};
+            this._orginalValues = {};
             this._dataChangeEvents = [];
-            this.__readonly = false;
+            this._isDirty =
+                this.__readonly = false;
             if (!initialValues)
                 return;
-            this._orginalValues = (initialValues instanceof ObserableModel) ?
-                initialValues.toJson() : initialValues;
-            if (initialValues[ObserableModel.idField])
-                this._id = initialValues[ObserableModel.idField];
-            if (initialValues[ObserableModel.modelStateField])
-                this._modelState = initialValues[ObserableModel.modelStateField];
+            this._orginalValues = initialValues instanceof ObserableModel ? initialValues.toJson() : initialValues;
+            //init
             this.initProperties();
         }
         Object.defineProperty(ObserableModel.prototype, "id", {
@@ -50,7 +57,9 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
                     return;
                 switch (value) {
                     case 4 /* Added */:
-                        this._values[ObserableModel.idField] = 0;
+                        this._id = 0;
+                        //set all child as added
+                        this.iterateNavigationalModels(function (model) { return model.modelState = 4 /* Added */; });
                         break;
                     case 8 /* Deleted */:
                         if (oldState === 1 /* Detached */)
@@ -59,17 +68,13 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
                             value = 1 /* Detached */;
                             break;
                         }
-                        if (this._values[ObserableModel.idField] === 0)
+                        if (this._id === 0)
                             throw new Error("id must be valid when state set to deleted");
-                        //set all child models state
-                        _.each(this._values, function (childItem) {
-                            if (_.isArray(childItem)) {
-                                _.each(childItem, function (item) {
-                                    if (item.modelState)
-                                        item.modelState = value;
-                                });
-                            }
-                        });
+                        if (oldState === 16 /* Modified */) {
+                            this.revertOriginal();
+                        }
+                        //set all child as deleted
+                        this.iterateNavigationalModels(function (model) { return model.modelState = 8 /* Deleted */; });
                         break;
                     case 16 /* Modified */:
                         if (oldState !== 2 /* Unchanged */)
@@ -91,10 +96,15 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
             set: function (value) {
                 if (this.__readonly === value)
                     return;
-                //set child array 
-                _.chain(this._values)
-                    .filter(function (item) { return _.isArray(item); })
-                    .each(function (item) { return item._readonly = value; });
+                //set childs
+                _.each(this._values, function (childItem) {
+                    if (_.isArray(childItem)) {
+                        childItem._readonly = value;
+                    }
+                    else if (childItem instanceof ObserableModel) {
+                        childItem._readonly = value;
+                    }
+                });
                 this.__readonly = value;
             },
             enumerable: true,
@@ -102,21 +112,70 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
         });
         //#endregion
         //#region Methods
+        /**
+         * Iterate navigational models
+         * @param cb Callback
+         */
+        ObserableModel.prototype.iterateNavigationalModels = function (cb) {
+            _.each(this._values, function (childItem) {
+                if (_.isArray(childItem)) {
+                    _.each(childItem, function (item) {
+                        if (item instanceof ObserableModel) {
+                            cb(item);
+                        }
+                    });
+                }
+                else if (childItem instanceof ObserableModel) {
+                    cb(childItem);
+                }
+            });
+        };
+        /**
+         * get value depending on prop type
+         * @param value Prop value
+         */
+        ObserableModel.prototype.mapProperty = function (value) {
+            var _this = this;
+            //if value is array,converto to ObserableModel array
+            if (_.isArray(value)) {
+                var subModels = [];
+                //set parent model
+                subModels.parentModel = this;
+                //listen collection for signal of model is being changed
+                subModels.subscribeCollectionChanged(function () {
+                    _this.fireDataChangedEvent();
+                });
+                //iterate nested models
+                for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                    var jsubModel = value_1[_i];
+                    subModels.add(new ObserableModel(jsubModel, this));
+                }
+                return subModels;
+            }
+            else 
+            //if value is literal obj,convert to ObserableModel
+            if (_.isObject(value) && !_.isDate(value)) {
+                var navModel = new ObserableModel(value, this);
+                //register datachange event to notify parent model
+                navModel.subscribeDataChanged(function (action, value, oldValue, key) {
+                    _this.fireDataChangedEvent(action, value, oldValue, key);
+                });
+                return navModel;
+            }
+            //otherwise,return primitive type
+            return this.extractValue(value);
+        };
+        /**
+         * Extract value depending on value type
+         * @param value
+         */
         ObserableModel.prototype.extractValue = function (value) {
+            //if value is date,create new date instance
             if (moment.isDate(value)) {
                 return new Date(value);
             }
+            //otherwise,return primitive type
             return value;
-        };
-        /**
-         * Extend model with source param
-         * @param source Source Model
-         */
-        ObserableModel.prototype.extendModel = function (source) {
-            this._id = source.id;
-            this._modelState = source.modelState;
-            this.initProperties(source.toJson());
-            this.fireDataChangedEvent(this.modelState);
         };
         /**
          * Remove item setting Deleted state
@@ -129,25 +188,13 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
          */
         ObserableModel.prototype.revertOriginal = function () {
             this.initProperties();
-            //bind events for nested fresh models
-            var _loop_1 = function(event_1) {
-                var subCollections = _.filter(this_1._values, function (item) { return _.isArray(item); });
-                _.each(subCollections, function (items) {
-                    items.subscribeCollectionChanged(event_1);
-                });
-            };
-            var this_1 = this;
-            for (var _i = 0, _a = this._dataChangeEvents; _i < _a.length; _i++) {
-                var event_1 = _a[_i];
-                _loop_1(event_1);
-            }
         };
         /**
         * Clone model with orginal values
         * @returns {IBaseCrudModel}
         */
         ObserableModel.prototype.cloneModel = function () {
-            var newModel = new ObserableModel(this._values);
+            var newModel = new ObserableModel(this._orginalValues);
             return newModel;
         };
         /**
@@ -157,7 +204,7 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
         ObserableModel.prototype.toJson = function (onlyChanges) {
             var _this = this;
             var jsonModel = {}, modifiedProps = [];
-            //get properties 
+            //get properties of this object itself
             var allValues = _.chain(this)
                 .keys()
                 .union(ObserableModel.stdFields)
@@ -167,16 +214,25 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
                 return memo;
             }, {})
                 .value();
-            //convert literal obj recursivly
+            //convert literal obj recursively
             _.each(allValues, function (value, key) {
                 if (_.isArray(value)) {
                     var jArray = _.chain(value)
+                        .filter(function (item) { return item instanceof ObserableModel; })
                         .filter(function (item) { return item.modelState !== 1 /* Detached */; })
                         .map(function (item) { return item.toJson(onlyChanges); })
                         .filter(function (item) { return !_.isEmpty(item); })
                         .value();
                     if (!onlyChanges || jArray.length)
                         jsonModel[key] = jArray;
+                }
+                else if (value instanceof ObserableModel) {
+                    if (value.modelState !== 1 /* Detached */) {
+                        var navigationalModel = value.toJson(onlyChanges);
+                        if (!onlyChanges || !_.isEmpty(navigationalModel)) {
+                            jsonModel[key] = navigationalModel;
+                        }
+                    }
                 }
                 else {
                     if (!onlyChanges || _this.modelState === 4 /* Added */ || _this._orginalValues[key] !== value) {
@@ -187,7 +243,9 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
             });
             if (!_.isEmpty(jsonModel) && onlyChanges) {
                 jsonModel[ObserableModel.idField] = this.id;
-                jsonModel[ObserableModel.modifiedPropsField] = _.difference(modifiedProps, ObserableModel.stdFields);
+                if (this.modelState === 16 /* Modified */) {
+                    jsonModel[ObserableModel.modifiedPropsField] = _.difference(modifiedProps, ObserableModel.stdFields);
+                }
             }
             return jsonModel;
         };
@@ -203,11 +261,6 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
          */
         ObserableModel.prototype.subscribeDataChanged = function (callback) {
             this._dataChangeEvents.push(callback);
-            //register dataChanged event for nested models
-            var subCollections = _.filter(this._values, function (item) { return _.isArray(item); });
-            _.each(subCollections, function (items) {
-                items.subscribeCollectionChanged(callback);
-            });
         };
         /**
          * Fire data chanfed event
@@ -216,6 +269,7 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
          * @param modelState modelstate of model
          */
         ObserableModel.prototype.fireDataChangedEvent = function (action, key, newValue, oldValue) {
+            this._isDirty = true;
             if (this._dataChangeEvents) {
                 for (var i = 0; i < this._dataChangeEvents.length; i++) {
                     this._dataChangeEvents[i].call(this, action, newValue, oldValue, key);
@@ -226,23 +280,21 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
          * Set all literal props to property
          * @param crudModel
          */
-        ObserableModel.prototype.initProperties = function (values) {
+        ObserableModel.prototype.initProperties = function () {
             var _this = this;
             this._values = {};
+            this._isDirty = false;
+            //set standart field
+            if (this._orginalValues[ObserableModel.idField])
+                this._id = this._orginalValues[ObserableModel.idField];
+            if (this._orginalValues[ObserableModel.modelStateField])
+                this._modelState = this._orginalValues[ObserableModel.modelStateField];
             //remove standart fields
-            var purgedModel = _.omit(values || this._orginalValues, ObserableModel.stdFields);
+            var purgedModel = _.omit(this._orginalValues, ObserableModel.stdFields);
             //define prop map 
             var modelPropsMap = _.mapObject(purgedModel, function (value, key) {
-                //check array
-                if (_.isArray(value)) {
-                    var subModels_1 = [];
-                    _.each(value, function (jModel) { subModels_1.add(new ObserableModel(jModel)); });
-                    _this._values[key] = subModels_1;
-                }
-                else {
-                    //set private 
-                    _this._values[key] = _this.extractValue(value);
-                }
+                //convert array or nav props to obserable
+                _this._values[key] = _this.mapProperty(value);
                 var propMap = {
                     enumerable: true,
                     configurable: true,
@@ -273,6 +325,6 @@ define(["require", "exports", "underscore", "underscore.string", "moment"], func
         ObserableModel.modifiedPropsField = "modifiedProperties";
         ObserableModel.stdFields = [ObserableModel.idField, ObserableModel.modelStateField];
         return ObserableModel;
-    }(Object));
-    exports.ObserableModel = ObserableModel;
+    }());
+    exports.default = ObserableModel;
 });

@@ -1,12 +1,23 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "../base/baseconfig", "angular"], function (require, exports, baseconfig_1, angular) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "tslib", "../base/baseconfig", "config/constants", "angular"], function (require, exports, tslib_1, baseconfig_1, constants, angular) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
-    //#region Server Configuration Environtment
+    //#region Server configuration environment service
     var module = angular.module('rota.config', []);
     //Get environment and make it constant to be available thru app
     var env = window.__globalEnvironment;
@@ -15,43 +26,69 @@ define(["require", "exports", "../base/baseconfig", "angular"], function (requir
         module.constant('Environment', _env);
     }
     else {
-        throw new Error('no server config found');
+        throw 'no server config found';
     }
+    //#endregion
+    //#region Constants service
+    var constantsModule = angular.module('rota.constants', []);
+    constantsModule.constant('Constants', constants);
     //#endregion
     //#region Config
     var Config = (function (_super) {
-        __extends(Config, _super);
+        tslib_1.__extends(Config, _super);
         function Config(environments, constants) {
-            _super.call(this);
+            var _this = _super.call(this) || this;
             var config = {
                 //Main app settings
                 appVersion: constants.APP_VERSION,
                 appTitle: constants.APP_TITLE,
                 debugMode: environments.debugging,
+                host: _this.getHostPath(location.protocol + "//" + location.host, environments.doms),
+                logoImageName: constants.style.IMG_BASE_PATH + '/' + constants.DEFAULT_LOGO_IMAGE_NAME,
+                favIconName: constants.style.IMG_BASE_PATH + '/' + constants.style.DEFAULT_FAVICON_NAME,
+                warnFavIconName: constants.style.IMG_BASE_PATH + '/' + constants.style.WARNING_FAVICON_NAME,
                 defaultApiPrefix: constants.server.DEFAULT_API_PREFIX,
-                supportedLanguages: [{ code: 'tr-tr', fullname: 'Türkçe' }, { code: 'en-us', fullname: 'English' }],
+                encodeStorageValues: !environments.debugging,
+                enableMultiLanguage: true,
+                supportedLanguages: [{
+                        code: constants.localization.DEFAULT_LANGUAGE,
+                        fullname: constants.localization.DEFAULT_LANGUAGE_DISPLAY_NAME
+                    }, {
+                        code: constants.localization.ENGLISH_LANGUAGE,
+                        fullname: constants.localization.ENGLISH_LANGUAGE_DISPLAY_NAME
+                    }],
                 serverExceptionLoggingEnabled: false,
-                showCompanyName: true,
+                pushServicePath: environments.pushServicePath,
+                enableQuickMenu: true,
                 datetimeFormat: {
                     timeFormat: constants.localization.TIME_FORMAT,
                     dateFormat: constants.localization.DATE_FORMAT,
                     monthFormat: constants.localization.MONTH_FORMAT,
                     yearFormat: constants.localization.YEAR_FORMAT,
-                    datePickerTimeMinStep: constants.localization.MIN_STEP
+                    datePickerTimeMinStep: constants.localization.MIN_STEP,
+                    useTimeZoneOffSet: false
                 },
+                spinnerOptions: constants.controller.DEFAULT_SPINNER_OPTIONS,
                 //Event names
                 eventNames: {
                     userLoginChanged: constants.events.EVENT_LOGIN_CHANGED,
                     ajaxFinished: constants.events.EVENT_AJAX_FINISHED,
                     ajaxStarted: constants.events.EVENT_AJAX_STARTED,
                     loginRequired: constants.events.EVENT_LOGIN_REQIRED,
-                    menuChanged: constants.events.EVENT_MENU_CHANGED,
                     modelLoaded: constants.events.EVENT_MODEL_LOADED
+                },
+                //Crud api action names
+                crudActionNames: {
+                    delete: constants.server.ACTION_NAME_DELETE,
+                    getById: constants.server.ACTION_NAME_GET_BY_ID,
+                    getList: constants.server.ACTION_NAME_LIST,
+                    getPagedList: constants.server.ACTION_NAME_PAGED_LIST,
+                    save: constants.server.ACTION_NAME_SAVE,
+                    exportList: constants.server.ACTION_NAME_EXPORT_LIST
                 },
                 //Grid settings
                 gridDefaultPageSize: constants.grid.GRID_DEFAULT_PAGE_SIZE,
                 gridDefaultOptionsName: constants.grid.GRID_DEFAULT_OPTIONS_NAME,
-                gridFullFeatureList: constants.grid.GRID_FULL_FEATUTE_LIST,
                 gridStandartFeatureList: constants.grid.GRID_STANDART_FEATURE_LIST,
                 //Crud page stuffs
                 autoSaveInterval: constants.controller.DEFAULT_AUTOSAVE_INTERVAL,
@@ -61,10 +98,37 @@ define(["require", "exports", "../base/baseconfig", "angular"], function (requir
                 defaultNewItemParamName: constants.controller.DEFAULT_NEW_ITEM_PARAM_NAME,
                 //Reportings
                 reportViewerUrl: environments.reportViewerUrl,
-                reportControllerUrl: environments.reportControllerUrl
+                reportControllerUrl: environments.reportControllerUrl,
+                //Dashborad
+                dashboardOptions: {
+                    widgetLoadingTemplate: constants.dashboard.WIDGET_LOADING_TEMPLATE
+                },
+                //Max file upload size 
+                maxFileUploadSize: "20MB",
+                //default request headers
+                requestHeaderMaps: {
+                    companyId: constants.server.HEADER_NAME_COMPANY_ID,
+                    roleId: constants.server.HEADER_NAME_ROLE_ID
+                }
             };
-            this.config = config;
+            _this.config = config;
+            return _this;
         }
+        /**
+         * Extract dom key depending on provided doms in environments
+         * @param host Current host
+         * @param doms Defined host
+         */
+        Config.prototype.getHostPath = function (host, doms) {
+            for (var dom in doms) {
+                if (doms.hasOwnProperty(dom)) {
+                    if (doms[dom].toLowerCase() === host.toLowerCase()) {
+                        return dom;
+                    }
+                }
+            }
+            return null;
+        };
         return Config;
     }(baseconfig_1.BaseConfig));
     exports.Config = Config;
@@ -74,5 +138,4 @@ define(["require", "exports", "../base/baseconfig", "angular"], function (requir
     //#endregion
     //#region Register
     module.provider('Config', Config);
-    //#endregion
 });

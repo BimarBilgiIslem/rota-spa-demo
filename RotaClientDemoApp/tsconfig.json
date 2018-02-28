@@ -1,0 +1,23 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "amd",
+        "target": "es5",
+        "noEmitOnError": true,
+        "removeComments": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "baseUrl": "app",
+        "importHelpers": true,
+        "noEmitHelpers": true,
+        //"strictNullChecks": true,
+        "paths": {
+            "tslib": [ "../Scripts/typings/tslib/tslib.d.ts" ]
+        },
+        "lib": [ "es2015.promise", "dom", "es5" ]
+    },
+    "include": [
+        "Scripts/typings/**/*",
+        "app/**/*"
+    ]
+}

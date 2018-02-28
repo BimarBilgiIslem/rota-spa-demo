@@ -1,6 +1,22 @@
-﻿//#region Menu & State Base Objects
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Menu & State Base Objects
 /**
- * Satte options used in controllers
+ * State options used in controllers
  */
 interface IStateInfo {
     /**
@@ -46,18 +62,6 @@ interface IMenuItem {
      */
     menuUrl?: string;
     /**
-     * Flag that state is partial child state,default false
-     */
-    isNestedState?: boolean;
-    /**
-    * Flag that state will be rtTab sticky
-    */
-    isStickyTab?: boolean;
-    /**
-     * Flag that state is multi view state,default false
-     */
-    isMultiViewState?: boolean;
-    /**
      * Starts a new group
      */
     startGroup?: boolean;
@@ -70,11 +74,6 @@ interface IMenuItem {
      */
     isMenu?: boolean;
     /**
-     * State unique name
-     * @description it must be omitted if only menu is used
-     */
-    state?: string;
-    /**
      * Indicates that menu will be in fullscreen container,default false
      */
     isFullScreen?: boolean;
@@ -86,38 +85,28 @@ interface IMenuItem {
      * Indicates that menu is added as quick menu
      */
     isQuickMenu?: boolean;
-}
-/**
- * Hierarchical menu item that including subMenus and parent menu
- */
-interface IHierarchicalMenuItem extends IMenuItem {
     /**
-     * Parent item
+     * RequireJS path of menu uri host which is predefined in doms in GlobalEnvironment
      */
-    parentMenu?: IHierarchicalMenuItem;
-    /**
-     * Sub menus
-     */
-    subMenus?: IHierarchicalMenuItem[];
+    host?: string;
 }
 /**
  * State that links states with menus
  */
 interface IRotaState extends ng.ui.IStickyState {
     /**
-     * Linked menu
+     * Hierarchical menu for navigation
      */
-    hierarchicalMenu?: IHierarchicalMenuItem;
+    hierarchicalMenu?: IHierarchicalMenu;
     /**
      * State controller url
      */
     controllerUrl?: string;
+    /**
+     * Is state nested ?
+     */
+    isNestedState?: boolean;
 }
-
-interface IMultiViewState extends ng.ui.IState {
-    controllerUrl?: string;
-}
-
 /**
  * Base menu viewmodel object 
  */
@@ -125,37 +114,70 @@ interface IMenuModel extends IRotaState, IMenuItem, IBaseModel {
     id: number;
 }
 /**
+ * Hierarchical menu items for navigation stuff
+ */
+interface IHierarchicalMenu extends IMenuModel {
+    parentMenu?: IHierarchicalMenu;
+    subMenus?: IHierarchicalMenu[];
+    //helper props
+    localizedTitle?: string;
+    absoluteUrl?: string;
+}
+/**
+ * Used for navigational things
+ */
+interface IBaseNavigationModel {
+    text: string;
+    url?: string;
+    icon?: string;
+}
+/**
  * Breadcrumb object
  */
-interface IBreadcrumb {
-    text: string;
-    url: string;
-    icon?: string;
+interface IBreadcrumb extends IBaseNavigationModel {
+
+}
+/**
+ * Mbf struct
+ */
+interface IQuickMenu extends IBaseNavigationModel {
+    state?: string;
+}
+/**
+ * NavBar item 
+ */
+interface INavMenuItem extends IBaseNavigationModel {
+    parent?: INavMenuItem;
+    subtree?: INavMenuItem[];
 }
 
 //#endregion
 
 //#region Routing config
+interface ITemplates {
+    error404?: string;
+    error500?: string;
+    shell?: string;
+    header?: string;
+    content?: string;
+    breadcrumb?: string;
+    badges?: string;
+    actions?: string;
+    currentcompany?: string;
+    title?: string;
+    userprofile?: string;
+    navmenumobile?: string;
+    feedback?: string;
+}
+
 /**
  * Route config
  */
 interface IRouteConfig extends IBaseConfig {
     /**
-     * Base shell path
+     * Html templates
      */
-    shellPath?: string;
-    /**
-     * Error 404 not found state url
-     */
-    error404StateUrl?: string;
-    /**
-     * Error 500 internal error state url
-     */
-    error500StateUrl?: string;
-    /**
-     * if there is no such state demanded,it will be transitioned to inactiveStateUrl
-     */
-    inactiveStateUrl?: string;
+    templates?: ITemplates;
     /**
     * Content controller alias name 
     */
@@ -192,7 +214,15 @@ interface IRouting extends IBaseService {
     /**
      * All menus registered
      */
-    menus: IHierarchicalMenuItem[];
+    navMenus: INavMenuItem[];
+    /**
+     * QuickMenus
+     */
+    quickMenus: IQuickMenu[];
+    /**
+     * Hierarchical menus & states
+     */
+    hierarchicalMenus: IHierarchicalMenu[];
     /**
      * Breadcrumbs
      */
@@ -200,7 +230,7 @@ interface IRouting extends IBaseService {
     /**
      * Current selected menu
      */
-    activeMenu: IHierarchicalMenuItem;
+    activeMenu: IHierarchicalMenu;
     /**
      * Current state
      */
@@ -212,6 +242,10 @@ interface IRouting extends IBaseService {
      */
     addMenus(states: IMenuModel[]): IRouting;
     /**
+     * Add current menu to quick menus
+     */
+    addCurrentMenuToQuickMenus(): void;
+    /**
      * Go to state
      * @param state  State to go
      * @param params State parameters
@@ -220,10 +254,23 @@ interface IRouting extends IBaseService {
      */
     go(state: string, params?: any, options?: ng.ui.IStateOptions): ng.IPromise<any>;
     /**
+     * Go preview page
+     */
+    goBack(): void;
+    /**
      * Reload content page
      * @returns {ng.IPromise<any>} Promise
      */
     reload(): ng.IPromise<any>;
+    /**
+     * Full reload
+     */
+    reloadBrowser(): void;
+    /**
+     * Change address bar url without reloading
+     * @param params
+     */
+    changeUrl<T>(params: IDictionary<T>): ng.IPromise<any>;
     /**
      * Initial state when application bootstraped
      * @param stateName State name
@@ -242,18 +289,28 @@ interface IRouting extends IBaseService {
    */
     getState(stateName: string): IRotaState;
     /**
-  * Check state is active
-  * @param stateName State name
-  * @param params Optional Params
-  * @param includes Flag that state is relatively or absolutely active
-  */
+    * Check state is active
+    * @param stateName State name
+    * @param params Optional Params
+    * @param includes Flag that state is relatively or absolutely active
+    */
     isActive(stateName: string, params?: any, includes?: boolean): boolean;
     /**
- * Check state is in active pipeline
- * @param stateName State name
- * @param params Optional Params
- */
+    * Check state is in active pipeline
+    * @param stateName State name
+    * @param params Optional Params
+    */
     isInclude(stateName: string, params?: any): boolean;
+    /**
+    * Get active menu eliminating nested states
+    * @param state Optional state
+    */
+    getActiveMenu(state?: IRotaState): IHierarchicalMenu;
+    /**
+    * Get base host url
+    * @returns {string} 
+    */
+    getHostUrl(): string;
 }
 
 //#endregion

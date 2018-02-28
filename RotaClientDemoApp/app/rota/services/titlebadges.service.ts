@@ -1,17 +1,41 @@
-﻿//#region TitleBadge Service
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region TitleBadge Service
 /**
  * TitleBadge Service
  */
 class TitleBadges implements ITitleBadges {
     //#region Props
     serviceName = "TitleBadges Service";
+    static injectionName = "TitleBadges";
     badges: { [index: number]: ITitleBadge };
     //#endregion
 
     //#region Init
-    static $inject = ['Localization'];
-    constructor(private localization: ILocalization) {
+    static $inject = ['$rootScope', 'Localization', 'Constants'];
+    constructor(private $rootScope: IRotaRootScope,
+        private localization: ILocalization,
+        private constants: IConstants) {
         this.initBadges();
+        //clear badges when state changes
+        $rootScope.$on(constants.events.EVENT_STATE_CHANGE_SUCCESS,
+            () => {
+                this.clearBadges();
+            });
     }
     /**
      * Create all badges
@@ -28,7 +52,7 @@ class TitleBadges implements ITitleBadges {
         this.badges[BadgeTypes.Newmode] = {
             color: 'info',
             icon: 'plus',
-            description: this.localization.getLocal('rota.yenikayit')
+            description: this.localization.getLocal('rota.yeni')
         };
         this.badges[BadgeTypes.Cloning] = {
             color: 'danger',
@@ -44,7 +68,8 @@ class TitleBadges implements ITitleBadges {
         this.badges[BadgeTypes.Dirty] = {
             color: 'success',
             icon: 'pencil',
-            description: this.localization.getLocal('rota.duzeltiliyor')
+            description: this.localization.getLocal('rota.duzeltiliyor'),
+            hiddenDescOnMobile: true
         };
 
         this.badges[BadgeTypes.Recordcount] = {
@@ -86,7 +111,7 @@ class TitleBadges implements ITitleBadges {
 
 //#region Register
 var module: ng.IModule = angular.module('rota.services.titlebadges', []);
-module.service('TitleBadges', TitleBadges);
+module.service(TitleBadges.injectionName, TitleBadges);
 //#endregion
 
 export { TitleBadges }

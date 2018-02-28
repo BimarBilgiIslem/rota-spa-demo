@@ -27,7 +27,7 @@
     <SccProvider>SAK</SccProvider>
     <UseGlobalApplicationHostFile />
     <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
-    <TypeScriptToolsVersion>2.0</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.4</TypeScriptToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -64,37 +64,57 @@
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.0\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
+    <Reference Include="EPPlus, Version=4.1.0.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.1.0\lib\net40\EPPlus.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+    <Reference Include="IdentityModel, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IdentityModel.1.9.2\lib\net45\IdentityModel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.2.33, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.2.206221351\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Cors, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Cors.3.1.0\lib\net45\Microsoft.Owin.Cors.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.HttpListener, Version=2.0.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Host.HttpListener.2.0.2\lib\net45\Microsoft.Owin.Host.HttpListener.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Owin.Hosting, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Hosting.3.0.1\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.3.0.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.Jwt.3.0.0\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Jwt.3.1.0\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.0.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ReportViewer.WebForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
@@ -105,8 +125,8 @@
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -121,8 +141,8 @@
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.20622.1351, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.2.206221351\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -130,6 +150,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web.Cors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Cors.5.0.0\lib\net45\System.Web.Cors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -199,7 +223,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\SessionConfig.cs" />
+    <Compile Include="App_Start\SignalRContractResolver.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\HomeControllers.cs" />
     <Compile Include="Controllers\KullaniciController.cs" />
     <Compile Include="Controllers\ReportController.cs" />
     <Compile Include="Controllers\KategoriController.cs" />
@@ -224,17 +251,20 @@
     <Content Include="app\edukkan\vitrin\vitrin.html" />
     <Content Include="app\resources\nls\en-US\resources.js" />
     <Content Include="app\resources\nls\resources.js" />
-    <Content Include="app\resources\nls\tr-tr\resources.js" />
-    <Content Include="app\rota\core\angular-animate.js" />
+    <Content Include="app\resources\nls\tr-tr\resouces.js" />
+    <Content Include="app\rota\core\angular-animate.min.js" />
     <Content Include="app\rota\core\angular-cookies.min.js" />
     <Content Include="app\rota\core\angular-locale_tr-tr.js" />
-    <Content Include="app\rota\core\angular-sanitize.js" />
-    <Content Include="app\rota\core\angular-ui-router.js" />
-    <Content Include="app\rota\core\angular.js" />
+    <Content Include="app\rota\core\angular-sanitize.min.js" />
+    <Content Include="app\rota\core\angular-ui-router.min.js" />
+    <Content Include="app\rota\core\angular.min.js" />
     <Content Include="app\rota\core\jquery-2.1.4.min.js" />
     <Content Include="app\rota\core\jquery.signalR-2.2.1.min.js" />
+    <Content Include="app\rota\core\oidc-client.min.js" />
+    <Content Include="app\rota\core\Reflect.js" />
     <Content Include="app\rota\core\require.js" />
-    <Content Include="app\rota\core\ui-bootstrap-tpls-2.3.0.min.js" />
+    <Content Include="app\rota\core\tslib.js" />
+    <Content Include="app\rota\core\ui-bootstrap-tpls-2.5.0.min.js" />
     <Content Include="app\rota\lib\angular-scroll.min.js" />
     <Content Include="app\rota\lib\bootstrap-colorpicker-module.min.js" />
     <Content Include="app\rota\lib\bootstrap.min.js" />
@@ -421,6 +451,7 @@
     <Content Include="app\rota\lib\json-sans-eval.js" />
     <Content Include="app\rota\lib\json.js" />
     <Content Include="app\rota\lib\jws-3.0.min.js" />
+    <Content Include="app\rota\lib\mask.min.js" />
     <Content Include="app\rota\lib\mfb-directive.js" />
     <Content Include="app\rota\lib\moment.min.js" />
     <Content Include="app\rota\lib\ng-ckeditor.js" />
@@ -451,17 +482,27 @@
     <Content Include="app\rota\shell\views\badges.html" />
     <Content Include="app\rota\shell\views\breadcrumb.html" />
     <Content Include="app\rota\shell\views\content.html" />
+    <Content Include="app\rota\shell\views\current-company.html" />
     <Content Include="app\rota\shell\views\error404.html" />
     <Content Include="app\rota\shell\views\error500.html" />
+    <Content Include="app\rota\shell\views\feedback.html" />
     <Content Include="app\rota\shell\views\footer.html" />
+    <Content Include="app\rota\shell\views\header-action-buttons.html" />
     <Content Include="app\rota\shell\views\header.html" />
+    <Content Include="app\rota\shell\views\nav-menu-mobile.html" />
     <Content Include="app\rota\shell\views\notification.html" />
     <Content Include="app\rota\shell\views\shell.html" />
+    <Content Include="app\rota\shell\views\silent_renew.html" />
+    <Content Include="app\rota\shell\views\title.html" />
+    <Content Include="app\rota\shell\views\user-profile.html" />
     <Content Include="App_Code\HtmlHelper.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Content Include="build\build.config.css.js" />
+    <Content Include="build\build.config.js" />
+    <Content Include="build\r.js" />
     <Content Include="Content\css\site.css" />
     <Content Include="Content\css\vendor-css\awesome-bootstrap-checkbox.css" />
     <Content Include="Content\css\vendor-css\bootstrap.min.css" />
@@ -476,10 +517,14 @@
     <Content Include="Content\css\vendor-css\select2_custom.css" />
     <Content Include="Content\css\vendor-css\toastr.min.css" />
     <Content Include="Content\css\vendor-css\ui-grid.min.css" />
+    <Content Include="Content\css\vendor-css\ui-layout.css" />
     <Content Include="Content\fonts\bootstrap\glyphicons-halflings-regular.svg" />
     <Content Include="Content\fonts\fontawesome-webfont.svg" />
     <Content Include="Content\fonts\ui-grid.svg" />
     <Content Include="Content\img\1logo_bimar.png" />
+    <Content Include="Content\img\avatar-default-large.png" />
+    <Content Include="Content\img\avatar-default-medium.png" />
+    <Content Include="Content\img\avatar-default-small.png" />
     <Content Include="Content\img\bg.jpg" />
     <Content Include="Content\img\bg2.jpg" />
     <Content Include="Content\img\bg3.jpg" />
@@ -488,6 +533,9 @@
     <Content Include="Content\img\edukkan-greeting.png" />
     <Content Include="Content\img\en-us.png" />
     <Content Include="Content\img\es.png" />
+    <Content Include="Content\img\favicon-default.ico" />
+    <Content Include="Content\img\favicon-warn-sign.png" />
+    <Content Include="Content\img\logo_place_holder.png" />
     <Content Include="Content\img\oldlogo_bimar.png" />
     <Content Include="Content\img\logo_bimar.png" />
     <Content Include="Content\img\select2.png" />
@@ -510,12 +558,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Index.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Home\SignIn.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Home\Signout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -541,12 +583,14 @@
     <TypeScriptCompile Include="app\rota\base\baselistcontroller.ts" />
     <TypeScriptCompile Include="app\rota\base\basemodalcontroller.ts" />
     <TypeScriptCompile Include="app\rota\base\basemodelcontroller.ts" />
+    <TypeScriptCompile Include="app\rota\base\basewidgetcontroller.ts" />
+    <TypeScriptCompile Include="app\rota\base\decorators.ts" />
+    <TypeScriptCompile Include="app\rota\base\defaultmodalcontroller.ts" />
     <TypeScriptCompile Include="app\rota\base\index.ts" />
     <TypeScriptCompile Include="app\rota\base\injectableobject.ts" />
     <TypeScriptCompile Include="app\rota\base\interfaces.ts" />
     <TypeScriptCompile Include="app\rota\base\obserablemodel.ts" />
     <TypeScriptCompile Include="app\rota\config\app.declarations.ts" />
-    <TypeScriptCompile Include="app\rota\config\app.interface.ts" />
     <TypeScriptCompile Include="app\rota\config\app.ts" />
     <TypeScriptCompile Include="app\rota\config\config.interface.ts" />
     <TypeScriptCompile Include="app\rota\config\config.ts" />
@@ -554,14 +598,23 @@
     <TypeScriptCompile Include="app\rota\config\constants.ts" />
     <TypeScriptCompile Include="app\rota\config\infrastructure.index.ts" />
     <TypeScriptCompile Include="app\rota\config\main.ts" />
+    <TypeScriptCompile Include="app\rota\config\oidc-manager.ts" />
     <TypeScriptCompile Include="app\rota\config\vendor.index.ts" />
     <TypeScriptCompile Include="app\rota\core\index.ts" />
     <TypeScriptCompile Include="app\rota\directives\index.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtAvatar.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtButton.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtCallout.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtContent.interface.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtContent.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtCopyToClipboard.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtCrudButtons.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtDashboard.interface.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtDashboard.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtDatePicker.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtDateRange.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtDownload.interface.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtDownload.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtDraggableModal.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtEditor.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtFileUpload.ts" />
@@ -569,26 +622,32 @@
     <TypeScriptCompile Include="app\rota\directives\rtForm.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtGrid.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtI18n.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtIdleTimeout.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtInclude.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtInfo.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtListButtons.ts" />
-    <TypeScriptCompile Include="app\rota\directives\rtMenu.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtMultiFileUpload.interface.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtMultiFileUpload.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtMultiSelect.interface.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtMultiSelect.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtNavMenu.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtNavProfile.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtNotification.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtNumber.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtPagePreview.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtPagePreviewOptions.interface.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtPanel.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtReportButtons.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtSelect.interface.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtSelect.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtSpinner.ts" />
+    <TypeScriptCompile Include="app\rota\directives\rtSticky.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtTabs.interface.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtTabs.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtTextCase.ts" />
-    <TypeScriptCompile Include="app\rota\directives\rtTree.ts" />
     <TypeScriptCompile Include="app\rota\directives\rtValidator.ts" />
     <TypeScriptCompile Include="app\rota\extensions\array.extensions.ts" />
     <TypeScriptCompile Include="app\rota\extensions\index.ts" />
-    <TypeScriptCompile Include="app\rota\extensions\interfaces.ts" />
     <TypeScriptCompile Include="app\rota\extensions\listmodel.extensions.ts" />
     <TypeScriptCompile Include="app\rota\extensions\string.extensions.ts" />
     <TypeScriptCompile Include="app\rota\extensions\window.extensions.ts" />
@@ -608,7 +667,6 @@
     <TypeScriptCompile Include="app\rota\services\dialogs.service.ts" />
     <TypeScriptCompile Include="app\rota\services\index.ts" />
     <TypeScriptCompile Include="app\rota\services\interceptors.service.ts" />
-    <TypeScriptCompile Include="app\rota\services\loader.config.ts" />
     <TypeScriptCompile Include="app\rota\services\loader.interface.ts" />
     <TypeScriptCompile Include="app\rota\services\loader.service.ts" />
     <TypeScriptCompile Include="app\rota\services\localization.interface.ts" />
@@ -629,12 +687,15 @@
     <TypeScriptCompile Include="app\rota\services\security.service.ts" />
     <TypeScriptCompile Include="app\rota\services\signalr.hub.ts" />
     <TypeScriptCompile Include="app\rota\services\signalr.interface.ts" />
+    <TypeScriptCompile Include="app\rota\services\signalr.service.ts" />
     <TypeScriptCompile Include="app\rota\services\titlebadges.interface.ts" />
     <TypeScriptCompile Include="app\rota\services\titlebadges.service.ts" />
     <TypeScriptCompile Include="app\rota\services\validators.interface.ts" />
     <TypeScriptCompile Include="app\rota\services\validators.service.ts" />
+    <TypeScriptCompile Include="app\rota\shell\profile.controller.ts" />
     <TypeScriptCompile Include="app\rota\shell\shell.controller.ts" />
     <TypeScriptCompile Include="app\rota\shell\shell.interface.ts" />
+    <TypeScriptCompile Include="app\rota\shell\templates.ts" />
     <TypeScriptCompile Include="app\startup.ts" />
     <TypeScriptCompile Include="Scripts\typings\angular-hotkeys\angular-hotkeys.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angular-scroll\angular-scroll.d.ts" />
@@ -648,16 +709,18 @@
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-route.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular-sanitize.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\angularjs\angular.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\es6-promise\es6-promise.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\jquery\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\kjur\jws.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\moment\moment-node.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\moment\moment.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\ng-file-upload\ng-file-upload.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\oidc\oidc-client.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\reflect-metadata\reflect-metadata.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\requirejs\require.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\signalr\signalr.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\spin\spin.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\toastr\toastr.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\tslib\tslib.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\ui-grid\ui-grid.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\ui-router-extras\ui-router-extras.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\underscore.string\underscore.string.d.ts" />
@@ -670,6 +733,7 @@
     <Content Include="app\rota\lib\ckeditor\plugins\scayt\README.md" />
     <Content Include="app\rota\lib\ckeditor\plugins\scayt\LICENSE.md" />
     <Content Include="app\rota\lib\ckeditor\plugins\scayt\CHANGELOG.md" />
+    <Content Include="build\build.bat" />
     <None Include="compilerconfig.json" />
     <None Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
@@ -833,6 +897,84 @@
     <Content Include="Content\fonts\bootstrap\glyphicons-halflings-regular.eot" />
     <Content Include="Content\scss\demo\_greeting.scss" />
     <Content Include="edukkan-logo.ai" />
+    <Content Include="tsconfig.json" />
+    <Content Include="Content\scss\vendor\awesome-bootstrap-checkbox.scss" />
+    <Content Include="Content\scss\vendor\animate\_animate.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_wobble.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_wiggle.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_tada.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_swing.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideOutUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideOutRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideOutLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideOutDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideInUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideInRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideInLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_slideInDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_shake.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateOutUpRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateOutUpLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateOutDownRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateOutDownLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateOut.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateInUpRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateInUpLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateInDownRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateInDownLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rotateIn.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rollOut.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_rollIn.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_pulse.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_lightSpeedOut.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_lightSpeedIn.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_hingeRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_hingeLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_helpers.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_flipOutY.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_flipOutX.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_flipInY.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_flipInX.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_flip.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutUpBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutRightBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutLeftBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutDownBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOutDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeOut.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInUpBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInRightBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInLeftBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInDownBig.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeInDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_fadeIn.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceOutUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceOutRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceOutLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceOutDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceOut.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceInUp.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceInRight.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceInLeft.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceInDown.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounceIn.scss" />
+    <Content Include="Content\scss\vendor\animate\partials\_bounce.scss" />
+    <Content Include="Content\scss\rota\sections\_sub-header.scss" />
+    <Content Include="Content\scss\rota\components\_rtPagePreview.scss" />
+    <Content Include="Content\scss\rota\components\_rtNumber.scss" />
+    <Content Include="Content\scss\rota\components\_rtNotification.scss" />
+    <Content Include="Content\scss\rota\components\_rtNavProfile.scss" />
+    <Content Include="Content\scss\rota\components\_rtNavMenuMobile.scss" />
+    <Content Include="Content\scss\rota\components\_rtNavMenu.scss" />
+    <Content Include="Content\scss\rota\components\_rtInfo.scss" />
+    <Content Include="Content\scss\rota\components\_rtFileUpload.scss" />
+    <Content Include="Content\scss\rota\components\_avatar.scss" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
@@ -857,7 +999,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>50990</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:29795/</IISUrl>
+          <IISUrl>http://localhost:1233/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

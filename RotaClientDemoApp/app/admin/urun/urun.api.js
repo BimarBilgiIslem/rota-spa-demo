@@ -1,19 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/basecrudapi"], function (require, exports, app_1, basecrudapi_1) {
+define(["require", "exports", "tslib", "rota/base/basecrudapi", "rota/base/decorators"], function (require, exports, tslib_1, basecrudapi_1, decorators_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     var MIN_STOK_MIKTARI_CACHE_KEY = 'min_stok_miktari';
     var DEFAULT_MIN_STOK_MIKTARI = 10;
     //Define your IurunApi interface in your interface file
     var UrunApi = (function (_super) {
-        __extends(UrunApi, _super);
+        tslib_1.__extends(UrunApi, _super);
         function UrunApi(bundle) {
-            _super.call(this, bundle, 'urun');
-            this.minStokMiktari = +this.caching.localStorage.get(MIN_STOK_MIKTARI_CACHE_KEY) || DEFAULT_MIN_STOK_MIKTARI;
+            var _this = _super.call(this, bundle) || this;
+            _this.minStokMiktari = +_this.caching.localStorage.get(MIN_STOK_MIKTARI_CACHE_KEY) || DEFAULT_MIN_STOK_MIKTARI;
+            return _this;
         }
         /**
          * Min stok miktari
@@ -23,10 +20,11 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudapi"], funct
             this.caching.localStorage.store(MIN_STOK_MIKTARI_CACHE_KEY, value);
             this.minStokMiktari = value;
         };
+        UrunApi = tslib_1.__decorate([
+            decorators_1.Api({ serverApi: 'urun' }),
+            tslib_1.__metadata("design:paramtypes", [Object])
+        ], UrunApi);
         return UrunApi;
-    }(basecrudapi_1.BaseCrudApi));
+    }(basecrudapi_1.default));
     exports.UrunApi = UrunApi;
-    //#region Register
-    app_1.App.addApi("urunApi", UrunApi);
-    //#endregion
 });

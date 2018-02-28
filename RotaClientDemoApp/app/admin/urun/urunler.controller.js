@@ -1,19 +1,18 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/baselistcontroller", "./urun.api", "../kategori/kategori.api"], function (require, exports, app_1, baselistcontroller_1) {
+define(["require", "exports", "tslib", "rota/base/baselistcontroller", "rota/base/decorators", "./urun.api", "../kategori/kategori.api"], function (require, exports, tslib_1, baselistcontroller_1, decorators_1, urun_api_1, kategori_api_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     /**
      * Your base list controller.Replace IBaseModel and IBaseModelFilter with your own models
      */
     var UrunlerController = (function (_super) {
-        __extends(UrunlerController, _super);
-        function UrunlerController(bundle) {
+        tslib_1.__extends(UrunlerController, _super);
+        function UrunlerController(bundle, urunApi, kategoriApi) {
+            var _this = 
             //configure options for your need
-            _super.call(this, bundle, { editState: 'shell.content.urun', pagingEnabled: false, storeFilterValues: true });
+            _super.call(this, bundle) || this;
+            _this.urunApi = urunApi;
+            _this.kategoriApi = kategoriApi;
             //Neler orneklendi
             var whatIncluded = [
                 "Filtre ile Listeleme sayfası örneği",
@@ -22,10 +21,11 @@ define(["require", "exports", "rota/config/app", "rota/base/baselistcontroller",
                 "<b>ui-grid</b> custom cell formatting",
                 "<b>ui-grid</b> custom row formmating işlemi <a href='http://ui-grid.info/docs/#/tutorial/317_custom_templates' target='_blank'>ui-grid custom template</a>"
             ];
-            this.logger.notification.info({
+            _this.notification.info({
                 message: whatIncluded.join('<br/>'),
                 title: 'Bu sayfadaki örnekler'
             });
+            return _this;
         }
         UrunlerController.prototype.rowFormatter = function (row) {
             return row.entity.stokMiktari <= this.urunApi.minStokMiktari;
@@ -67,9 +67,16 @@ define(["require", "exports", "rota/config/app", "rota/base/baselistcontroller",
             //return your model here
             return this.urunApi.getList(modelFilter);
         };
+        UrunlerController = tslib_1.__decorate([
+            decorators_1.Controller({
+                registerName: 'urunlerController',
+                editState: 'shell.content.urun',
+                pagingEnabled: false,
+                storeFilterValues: true
+            }),
+            tslib_1.__metadata("design:paramtypes", [Object, urun_api_1.UrunApi,
+                kategori_api_1.KategoriApi])
+        ], UrunlerController);
         return UrunlerController;
-    }(baselistcontroller_1.BaseListController));
-    //#region Register
-    app_1.App.addController("urunlerController", UrunlerController, "urunApi", "kategoriApi");
+    }(baselistcontroller_1.default));
 });
-//#endregion 

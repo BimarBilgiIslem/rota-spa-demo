@@ -1,4 +1,20 @@
-﻿import { ObserableModel } from "../base/obserablemodel";
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import ObserableModel from "../base/obserablemodel";
 /**
  * Set readonly prop of array
  */
@@ -46,42 +62,6 @@ Array.prototype["findById"] = function (id: number): IBaseCrudModel {
 Array.prototype["findByGui"] = function (gui: string): IBaseCrudModel {
     const item = _.findWhere(this, { gui: gui });
     return item as IBaseCrudModel;
-}
-/**
- * Get count in the list pass the iterator truth test.
- * @param callback Iterator fuction
- * @returns {number} 
- */
-Array.prototype["count"] = function (callback: _.ListIterator<IBaseCrudModel, boolean>): number {
-    const items = this.where(this, callback);
-    return items !== null ? items.length : 0;
-}
-/**
- *  Returns true if any of the values in the list pass the iterator truth test.
- * @param fn Iterator function
- * @returns {boolean} 
- */
-Array.prototype["any"] = function (callback: _.ListIterator<IBaseCrudModel, boolean>): boolean {
-    return _.some(this, callback);
-}
-/**
- * Filter the list in the list pass the iterator truth test.
-  * @param callback Iterator function
- * @returns {IBaseListModel<TModel>}
- */
-Array.prototype["where"] = function (callback: _.ListIterator<IBaseCrudModel, boolean>): Array<IBaseCrudModel> {
-    return _.filter<IBaseCrudModel>(this, callback);
-}
-/**
- * Returns the first element of the list pass the iterator truth test.
-  * @param callback Iterator function
- * @returns {IBaseListModel}
- */
-Array.prototype["firstOrDefault"] = function (callback?: _.ListIterator<IBaseCrudModel, boolean>): IBaseCrudModel {
-    let result = this;
-    if (callback)
-        result = this.where(callback);
-    return result[0];
 }
 /**
 * Delete model by id
@@ -146,7 +126,7 @@ Array.prototype["add"] = function (model: IBaseCrudModel | IObserableModel<IBase
         return this;
     //convert literal to obserable 
     if (!(model instanceof ObserableModel)) {
-        model = new ObserableModel(model);
+        model = new ObserableModel(model, this.parentModel);
     }
     //set readonly - this is hack for rtMultiSelect.
     (model as IObserableModel<IBaseCrudModel>)._readonly = this._readonly;
@@ -159,7 +139,6 @@ Array.prototype["add"] = function (model: IBaseCrudModel | IObserableModel<IBase
     //register model changes event
     const self = this;
     (model as IObserableModel<IBaseCrudModel>).subscribeDataChanged(function (action?: ModelStates): void {
-        //only added or deleted model changes events accepted 
         if (self._collectionChangedEvents) {
             for (let i = 0; i < self._collectionChangedEvents.length; i++) {
                 const callbackItem = self._collectionChangedEvents[i];
@@ -174,25 +153,13 @@ Array.prototype["add"] = function (model: IBaseCrudModel | IObserableModel<IBase
         (model as IObserableModel<IBaseCrudModel>).acceptChanges();
         model.modelState = ModelStates.Added;
     }
-
     return this;
 }
 /**
  * Register callback event for all collection changes
  * @param callback Callback method
  */
-Array.prototype["subscribeCollectionChanged"] = function (callback: IModelCollectionChangedEvent, includeAllChanges?: boolean): void {
+Array.prototype["subscribeCollectionChanged"] = function (callback: IModelCollectionChangedEvent): void {
     if (!this._collectionChangedEvents) this._collectionChangedEvents = [];
     this._collectionChangedEvents.push(callback);
-}
-/**
- * Sum values returned from iteration function
- * @param callBack Iteration function
- * @returns {number} 
- */
-Array.prototype["sum"] = function (callBack: _.ListIterator<IBaseCrudModel, number>): number {
-    return _.reduce<IBaseCrudModel, number>(this, (total, item, index, list) => {
-        total += callBack(item, index, list);
-        return total;
-    }, 0);
 }

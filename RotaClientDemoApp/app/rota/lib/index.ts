@@ -1,21 +1,16 @@
 ﻿//#region Import
 import "spinner"
-import "bootstrap"
 import "grid"
 import "hotkeys"
 import "scroll"
 import "select"
-import "ngcurrency"
+import "ng-currency"
 import "./dateTimeInput"
 import "./datetimepicker"
 import "ct-ui-router-extras"
 import "./underscore.mixed"
 import "mfb"
 import "imgcrop"
-import "jws"
-import "rsa"
-import "jsonsanseval"
-import "crypto"
 import "i18n";
 import "text";
 import "json";
@@ -24,10 +19,9 @@ import "xdom";
 import "toastr";
 import "fileupload"
 import "circleprogress"
-import "ckeditor"
 import "ng-ckeditor"
 import "ngcontextmenu"
-import "treeview"
+import "uimask"
 //#endregion
 
 //#region Register
@@ -35,7 +29,9 @@ angular.module('rota.lib',
     [
         //Grid plugins
         //https://github.com/angular-ui/ui-grid
-        'ui.grid', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.pagination', 'ui.grid.exporter', 'ui.grid.grouping', 'ui.grid.resizeColumns',
+        'ui.grid', 'ui.grid.selection', 'ui.grid.pinning', 'ui.grid.pagination', 'ui.grid.exporter',
+        'ui.grid.grouping', 'ui.grid.resizeColumns', 'ui.grid.saveState', 'ui.grid.moveColumns',
+        'ui.grid.edit', 'ui.grid.rowEdit', 'ui.grid.expandable',
         //Datetime picker
         //https://github.com/dalelotts/angular-bootstrap-datetimepicker
         'ui.dateTimeInput',
@@ -71,8 +67,8 @@ angular.module('rota.lib',
         //Context Menu
         //https://github.com/Wildhoney/ngContextMenu
         'ngContextMenu',
-        //https://github.com/iVantage/angular-ivh-treeview
-        //Treeview 
-        'ivh.treeview'
+        //Mask
+        //https://github.com/angular-ui/ui-mask
+        'ui.mask'
     ]);
 //#endregion

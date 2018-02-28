@@ -1,0 +1,29 @@
+﻿.avatar-link {
+    padding-top: 8px !important;
+    padding-bottom: 5px !important;
+}
+
+.avatar-small {
+    @include size($avatar-size-small,$avatar-size-small)
+}
+
+.avatar-medium {
+    @include size($avatar-size-medium,$avatar-size-medium)
+}
+
+.avatar-large {
+    @include size($avatar-size-large,$avatar-size-large)
+}
+
+.avatar-fullname {
+}
+
+.avatar-firstletter {
+    border-radius: 50%;
+    background: $avatar-first-letter-bg;
+    color: #fff;
+    font-size: 1.2em;
+    text-align: center;
+    line-height: 2.1em;
+    display: inline-block;
+}

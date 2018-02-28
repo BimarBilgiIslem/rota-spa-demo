@@ -1,32 +1,32 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller", "moment", "./urun.api", "../kategori/kategori.api"], function (require, exports, app_1, basecrudcontroller_1, moment) {
+define(["require", "exports", "tslib", "rota/base/basecrudcontroller", "rota/base/decorators", "moment", "./urun.api", "../kategori/kategori.api"], function (require, exports, tslib_1, basecrudcontroller_1, decorators_1, moment, urun_api_1, kategori_api_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     var DEFAULT_IMAGE_URI = "content/img/default.jpg";
     /**
      * Your base crud controller.Replace IBaseCrudModel with your own model
      */
     var UrunController = (function (_super) {
-        __extends(UrunController, _super);
+        tslib_1.__extends(UrunController, _super);
         //#endregion
         //#region Init
-        function UrunController(bundle) {
+        function UrunController(bundle, urunApi, kategoriApi) {
+            var _this = 
             //configure options for your need
-            _super.call(this, bundle, {});
+            _super.call(this, bundle) || this;
+            _this.urunApi = urunApi;
+            _this.kategoriApi = kategoriApi;
+            //#region Genel değişkenler
             //Sabitler
-            this.defaultImgUri = DEFAULT_IMAGE_URI;
+            _this.defaultImgUri = DEFAULT_IMAGE_URI;
             //Yeni kategori modal ayarlari
-            this.yeniKategoriModalAyarlari = {
+            _this.yeniKategoriModalAyarlari = {
                 templateUrl: 'admin/kategori/kategori.modal.html',
-                instanceOptions: { services: ['kategoriApi'] }
+                instanceOptions: { services: [{ instanceName: 'kategoriApi', injectionName: kategori_api_1.KategoriApi.injectionName }] }
             };
             //custom validators
-            this.validators.addValidation({ func: this.stokMiktariKontrol, triggerOn: 4 /* Action */ })
-                .addValidation({ func: this.urunKoduKontrolu, triggerOn: 1 /* Blur */, name: 'urunKoduKontrolu' });
+            _this.validators.addValidation({ func: _this.stokMiktariKontrol, triggerOn: 4 /* Action */ })
+                .addValidation({ func: _this.urunKoduKontrolu, triggerOn: 1 /* Blur */, name: 'urunKoduKontrolu' });
             //Neler orneklendi
             var whatIncluded = [
                 "Form <b>input</b> kullanımları (text,number,currency,editor)",
@@ -44,10 +44,11 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller",
                 "<b>File upload ve Image croping</b>",
                 "<b>ShowConfirm,ShowPrompt,ShowModal</b> kullanımı - Dialogs servisi"
             ];
-            this.logger.notification.info({
+            _this.logger.notification.info({
                 message: whatIncluded.join('<br/>'),
                 title: 'Bu sayfadaki örnekler'
             });
+            return _this;
         }
         //#endregion
         //#region Validasyon Methodlari
@@ -221,9 +222,10 @@ define(["require", "exports", "rota/config/app", "rota/base/basecrudcontroller",
                 instanceOptions: { params: { urunResmi: this.model.urunResmi } }
             });
         };
+        UrunController = tslib_1.__decorate([
+            decorators_1.Controller({ registerName: 'urunController' }),
+            tslib_1.__metadata("design:paramtypes", [Object, urun_api_1.UrunApi, kategori_api_1.KategoriApi])
+        ], UrunController);
         return UrunController;
-    }(basecrudcontroller_1.BaseCrudController));
-    //#region Register
-    app_1.App.addController("urunController", UrunController, "urunApi", "kategoriApi", "CurrentUser");
+    }(basecrudcontroller_1.default));
 });
-//#endregion 

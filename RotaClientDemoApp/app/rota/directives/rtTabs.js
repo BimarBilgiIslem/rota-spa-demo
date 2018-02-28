@@ -1,5 +1,21 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#region Ui-Tabs wrapper
     //#region Tabs Controller
     var TabsController = (function () {
@@ -11,6 +27,10 @@ define(["require", "exports"], function (require, exports) {
             this.routing = routing;
             this.logger = logger;
             this.constants = constants;
+            /**
+             * Active tab index
+             */
+            this.activeIndex = 0;
             if (!common.isArray(this.tabs)) {
                 throw new Error(constants.errors.MISSING_TABS);
             }
@@ -55,20 +75,22 @@ define(["require", "exports"], function (require, exports) {
                     _this.logger.console.warn({ message: state + ' not found' });
                     return;
                 }
+                tab.index = i++;
                 tab.badgeType = tab.badgeType || 'alert-info';
                 tab.params = tab.params || {};
                 tab.disable = tab.disable;
-                tab.active = _this.isActive(tab) && !tab.disable;
+                if (_this.isActive(tab) && !tab.disable) {
+                    _this.activeIndex = tab.index;
+                }
                 tab.heading = tab.heading || state.hierarchicalMenu.title;
                 tab.icon = tab.icon || state.hierarchicalMenu.menuIcon;
-                if (state.hierarchicalMenu.isStickyTab) {
+                if (state.sticky) {
                     tab.tabViewName = tab.tabViewName || state.name;
                 }
                 else {
                     tab.tabViewName = 'nosticky';
                     _this.isShowRelativeView = true;
                 }
-                tab.index = ++i;
             });
         };
         return TabsController;
@@ -92,9 +114,9 @@ define(["require", "exports"], function (require, exports) {
                 onSelected: '&'
             },
             scope: true,
-            template: '<div class="rt-tabs"><uib-tabset class="tab-container" type="{{tabvm.type}}" vertical="{{tabvm.vertical}}" ' +
+            template: '<div class="rt-tabs"><uib-tabset active="tabvm.activeIndex" class="tab-container" type="{{tabvm.type}}" vertical="{{tabvm.vertical}}" ' +
                 'justified="{{tabvm.justified}}">' + '<uib-tab index="tab.index" class="tab" ng-repeat="tab in tabvm.tabs track by tab.state"' +
-                'active="tab.active" disable="tab.disable" ng-click="tabvm.go(tab)">' +
+                'disable="tab.disable" ng-click="tabvm.go(tab)">' +
                 '<uib-tab-heading><i ng-class="[\'fa\', \'fa-\' + tab.icon]"></i> {{::tab.heading}}' +
                 '<span ng-show="tab.badge" class="tabbadge badge" ng-class="tab.badgeType">{{tab.badge}}</span> </uib-tab-heading>' +
                 '</uib-tab></uib-tabset>' +
@@ -111,5 +133,4 @@ define(["require", "exports"], function (require, exports) {
     //#region Register
     angular.module('rota.directives.rttabs', [])
         .directive('rtTabs', tabsDirective);
-    //#endregion
 });

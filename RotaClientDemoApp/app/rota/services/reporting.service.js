@@ -1,12 +1,29 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports", "moment"], function (require, exports, moment) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Reporting Service
     /**
      * Reporting service
      */
     var Reporting = (function () {
-        function Reporting($http, $q, routing, config, common, localization, dialogs, logger, constants) {
+        function Reporting($rootScope, $http, $q, routing, config, common, localization, dialogs, logger, constants) {
+            this.$rootScope = $rootScope;
             this.$http = $http;
             this.$q = $q;
             this.routing = routing;
@@ -18,9 +35,9 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
             this.constants = constants;
             this.serviceName = 'Reporting Service';
             if (!config.reportControllerUrl)
-                throw new Error(this.constants.errors.NO_REPORT_URL_PROVIDED);
+                this.logger.console.warn({ message: this.constants.errors.NO_REPORT_URL_PROVIDED });
             if (!config.reportViewerUrl)
-                throw new Error(this.constants.errors.NO_REPORT_VIEWER_URL_PROVIDED);
+                this.logger.console.warn({ message: this.constants.errors.NO_REPORT_VIEWER_URL_PROVIDED });
         }
         /**
          * Convert literak filter obj to ReportParams array
@@ -47,64 +64,36 @@ define(["require", "exports", "moment"], function (require, exports, moment) {
          * @param options Report generate options
          */
         Reporting.prototype.downloadReport = function (options) {
-            var _this = this;
             //extend defaults
-            options = angular.extend({ reportExportType: 2 /* Pdf */, reportDispositonType: 1 /* Attachment */ }, options);
-            //get url
-            var generateReportUrl = this.config.reportControllerUrl + "/" + this.constants.server.ACTION_NAME_GENERATE_REPORT +
-                "?reportName=" + options.reportName + "&reportExportType=" + options.reportExportType;
-            //convert filter to array
+            options = angular.extend({
+                reportExportType: 2 /* Pdf */,
+                reportDispositonType: 1 /* Attachment */
+            }, options);
+            //get url and convert filter to report params
+            var reportEndpoint = this.config.reportControllerUrl + "/" + this.constants.server.ACTION_NAME_GET_REPORT;
             var reportParams = this.mapReportParams(options.filter);
-            //generate report
-            var generateReportPromise = this.$http.post(generateReportUrl, reportParams);
-            return generateReportPromise.then(function () {
-                var getReportUrl = _this.config.reportControllerUrl + "/" + _this.constants.server.ACTION_NAME_GET_REPORT +
-                    "?displayReportName=" + options.displayReportName + "&reportDispositonType=" + options.reportDispositonType;
-                switch (options.reportDispositonType) {
-                    case 1 /* Attachment */:
-                        window.location.replace(getReportUrl);
-                        break;
-                    case 0 /* Inline */:
-                        window.open(getReportUrl, null, 'height=950, width=950, status=yes, resizable=yes, scrollbars=yes,' +
-                            ' toolbar=no, location=no, menubar=no left=0, top=10');
-                        break;
-                }
-                _this.logger.console.log({ message: options.reportName + ' report downloaded/viewed' });
+            //get report
+            this.$rootScope.$broadcast(this.constants.events.EVENT_START_FILEDOWNLOAD, {
+                url: reportEndpoint,
+                filter: {
+                    options: {
+                        reportName: options.reportName,
+                        displayReportName: options.displayReportName,
+                        reportExportType: options.reportExportType,
+                        reportDispositonType: options.reportDispositonType
+                    }, filter: { reportParams: reportParams }
+                },
+                inline: options.reportDispositonType === 0 /* Inline */
             });
+            this.logger.console.log({ message: options.reportName + ' report downloaded' });
         };
-        /**
-         * Show ReportViewer
-         * @param reportName Actual SSRS Report Name
-         * @param options Report Options
-         */
-        Reporting.prototype.showReport = function (options) {
-            var _this = this;
-            var paramResponsePromise;
-            if (!_.isEmpty(options.filter)) {
-                //convert filter to array params
-                var reportParams = this.mapReportParams(options.filter);
-                paramResponsePromise = this.$http.post(this.config.reportControllerUrl + "/" +
-                    this.constants.server.ACTION_NAME_SET_REPORT_FILTERS, reportParams);
-            }
-            return this.common.makePromise(paramResponsePromise).then(function () {
-                _this.logger.console.log({ message: options.reportName + ' report opened in reportviewer' });
-                return _this.dialogs.showReport({
-                    message: options.message,
-                    title: options.title,
-                    okText: options.okText,
-                    windowClass: options.windowClass,
-                    reportName: options.reportName,
-                    reportViewerUrl: _this.config.reportViewerUrl
-                });
-            });
-        };
-        Reporting.$inject = ['$http', '$q', 'Routing', 'Config', 'Common', 'Localization', 'Dialogs', 'Logger', 'Constants'];
+        Reporting.injectionName = "Reporting";
+        Reporting.$inject = ['$rootScope', '$http', '$q', 'Routing', 'Config', 'Common', 'Localization', 'Dialogs', 'Logger', 'Constants'];
         return Reporting;
     }());
     exports.Reporting = Reporting;
     //#endregion
     //#region Register
     var module = angular.module('rota.services.reporting', []);
-    module.service('Reporting', Reporting);
-    //#endregion
+    module.service(Reporting.injectionName, Reporting);
 });

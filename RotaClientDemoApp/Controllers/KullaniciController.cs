@@ -11,7 +11,6 @@ namespace RotaSPA_Client.Controllers
     {
         public IHttpActionResult GetProfile()
         {
-            var companyId = Request.Headers.GetValues("Current-RoleId").FirstOrDefault();
             var companies = new[]
             {
                 new {Id = 1, companyName = "Demo Şirket 1",roleId=1},

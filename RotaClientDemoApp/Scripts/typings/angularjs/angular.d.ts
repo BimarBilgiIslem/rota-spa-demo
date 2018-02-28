@@ -405,6 +405,7 @@ declare module angular {
         $viewValue: any;
 
         $modelValue: any;
+        $$invalidModelValue: any;
 
         $parsers: IModelParser[];
         $formatters: IModelFormatter[];
@@ -1415,11 +1416,11 @@ declare module angular {
 
     interface IHttpRequestConfigHeaders {
         [requestType: string]: string | (() => string);
-        common?: string | (() => string);
+        common?: any;
         get?: any;
-        post?: string | (() => string);
-        put?: string | (() => string);
-        patch?: string | (() => string);
+        post?: any;
+        put?: any;
+        patch?: any;
     }
 
     /**
@@ -1836,6 +1837,7 @@ declare module angular {
             instantiate<T>(typeConstructor: Function, locals?: any): T;
             invoke(inlineAnnotatedFunction: any[]): any;
             invoke(func: Function, context?: any, locals?: any): any;
+            loadNewModules(mods: string[]): void;
         }
 
         ///////////////////////////////////////////////////////////////////////

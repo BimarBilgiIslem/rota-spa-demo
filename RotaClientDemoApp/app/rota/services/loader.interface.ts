@@ -1,45 +1,35 @@
-﻿/**
- * Loader config service
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-interface ILoaderConfig extends IBaseConfig {
-    /**
-     * if ControllerUrl not defined,look for in templateUrl path
-     */
-    useTemplateUrlPath?: boolean;
-    /**
-     * Use baseUrl defined in routing config
-     */
-    useBaseUrl?: boolean;
-}
-/**
- * Loader settings
- */
-interface ILoaderSettings {
-    /**
-     * Controller url
-     */
-    controllerUrl?: string;
-    /**
-     * Template url
-     */
-    templateUrl?: string;
-    /**
-    * if ControllerUrl not defined,look for in templateUrl path
-    */
-    useTemplateUrlPath?: boolean;
-    /**
-     * Use baseUrl defined in routing config
-     */
-    useBaseUrl?: boolean;
-}
+
 /**
  * Loader service
  */
 interface ILoader extends IBaseService {
     /**
-     * Load file defined by parameters
-     * @param settings Loader settings
-     * @returns {[index: string]: any[]} Annotation function
+     * Load file from server with the provided url
+     * @param url Url
+     * @returns {ng.IPromise<string>}
      */
-    resolve(settings: ILoaderSettings): { [index: string]: any[] };
+    resolve(url: string): ng.IPromise<string>;
+    resolve(url: string, host?: string): ng.IPromise<string>;
+    /**
+     * Load provided files from server
+     * @param urls Url array
+     * @returns {ng.IPromise<string[]>}
+     */
+    resolve(urls: string[]): ng.IPromise<string[]>;
+    resolve(urls: string[], host?: string): ng.IPromise<string[]>;
 }

@@ -1,4 +1,20 @@
-﻿//#region Interfaces
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Interfaces
 interface IValidatorAttributes extends ng.IAttributes {
     rtValidator: string;
 }
@@ -25,6 +41,9 @@ function validatorDirective(common: ICommon, constants: IConstants, localization
                 //register asyncvalidators when changes occured
                 if (validator.triggerOn & TriggerOn.Changes) {
                     ngModelCnt.$asyncValidators[attrs.rtValidator] = (modelValue, viewValue) => {
+                        //ignore initial validation
+                        if (!ngModelCnt.$dirty) return common.promise();
+
                         var value = modelValue || viewValue;
                         return validators.runValidation(validator, TriggerOn.Changes, value)
                             .catch((result: IValidationResult) => {
@@ -37,9 +56,14 @@ function validatorDirective(common: ICommon, constants: IConstants, localization
                 //register blur event 
                 if (validator.triggerOn & TriggerOn.Blur) {
                     //element must be input type
-                    $(element).bind('blur', () => {
+                    const inputElem = element[0] instanceof HTMLInputElement ? element : element.find('input');
+                    inputElem && $(inputElem).bind('blur', () => {
                         const value = ngModelCnt.$modelValue || ngModelCnt.$viewValue;
-
+                        //first set pending status 
+                        if (common.isNullOrEmpty(value)) {
+                            ngModelCnt.$setValidity(attrs.rtValidator, true);
+                            return;
+                        }
                         validators.runValidation(validator, TriggerOn.Blur, value)
                             .then(() => {
                                 ngModelCnt.$setValidity(attrs.rtValidator, true);
@@ -50,6 +74,13 @@ function validatorDirective(common: ICommon, constants: IConstants, localization
                                 ngModelCnt.$setValidity(attrs.rtValidator, false);
                             });
                     });
+                    //reset validation when model set to pristine
+                    scope.$watch(() => ngModelCnt.$pristine,
+                        (pristine) => {
+                            if (pristine) {
+                                ngModelCnt.$setValidity(attrs.rtValidator, true);
+                            }
+                        });
                 }
             }
         }
@@ -57,7 +88,7 @@ function validatorDirective(common: ICommon, constants: IConstants, localization
 
     const directive = <ng.IDirective>{
         restrict: 'A',
-        require: 'ngModel',
+        require: '?ngModel',
         link: link
     };
     return directive;

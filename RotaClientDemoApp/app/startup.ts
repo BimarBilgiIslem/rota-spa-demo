@@ -1,4 +1,4 @@
-﻿import { App } from "rota/config/app";
+﻿import App from "rota/config/app";
 import * as userprofile from 'optional!json!/api/kullanici/getprofile!bust';
 
 interface IProfile {
@@ -6,22 +6,20 @@ interface IProfile {
     companies?: ICompany[];
 }
 
-App.setHomePage({
-    url: '/vitrin',
-    imageUri: '/Content/img/bg3.jpg'
-});
-
-//config phase of angular pipeline
-App.configure((ConfigProvider: IMainConfigProvider, SecurityConfigProvider: ISecurityConfigProvider): void => {
-    ConfigProvider.config.appTitle = "E-Dukkan SPA Demo App";
-
-    SecurityConfigProvider.config.authorizedCompanies = (userprofile as IProfile).companies;
-    SecurityConfigProvider.config.avatarUri = (userprofile as IProfile).imageUri;
-});
-
-//run phase of angular pipeline
-App.run((Routing: IRouting) => {
-    Routing.addMenus([
+App.setConfig({
+    main: {
+        appTitle: 'E-Dukkan SPA Demo App',
+        logoImageName:'Content/img/edukkan-greeting.png',
+        homePageOptions: {
+            url: '/vitrin',
+            imageUri: '/Content/img/bg3.jpg'
+        }
+    },
+    security: {
+        authorizedCompanies: (userprofile as any).companies
+    }
+})
+    .setNavMenus([
         {
             id: 0,
             isMenu: true,
@@ -88,4 +86,5 @@ App.run((Routing: IRouting) => {
             isQuickMenu: true
         }
     ]);
-});
+
+export = App;

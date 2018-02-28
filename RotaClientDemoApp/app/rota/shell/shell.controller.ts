@@ -1,8 +1,18 @@
-﻿//#region Imports
-import "../services/routing.service";
-import "../config/config";
-import "../services/logger.service";
-//#endregion
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 //#region Shell Controller
 /**
@@ -21,17 +31,14 @@ class ShellController {
     private _spinnerOptions: SpinnerOptions;
     get spinnerOptions(): SpinnerOptions { return this._spinnerOptions; }
     /**
-   * Active Menu
-   */
-    private _activeMenu: IHierarchicalMenuItem;
-    get activeMenu(): IHierarchicalMenuItem { return this._activeMenu; }
-    /**
      * Indicates that menu will be in fullscreen container,default false
      */
-    fullScreen: boolean;
     isHomePage: boolean;
+    isMobileOrTablet: boolean;
     bgImageUrl: { [index: string]: string };
     vidOptions: IVideoOptions;
+    viewPortClass?: string;
+    currentYear: number;
     //#endregion
 
     //#region Init
@@ -39,24 +46,18 @@ class ShellController {
         private $scope: IShellScope,
         private $location: ng.ILocationService,
         private $window: ng.IWindowService,
-        private hotkey: ng.hotkeys.HotkeysProvider,
-        private uploader: ng.angularFileUpload.IUploadService,
-        private securityConfig: ISecurityConfig,
         private routing: IRouting,
         private config: IMainConfig,
-        private logger: ILogger,
-        private titleBadges: ITitleBadges,
-        private localization: ILocalization,
-        private security: ISecurity,
         private dialogs: IDialogs,
-        private caching: ICaching,
-        private routeConfig: IRouteConfig,
-        private constants: IConstants) {
+        private constants: IConstants,
+        private currentUser: IUser,
+        private currentCompany: ICompany,
+        private routeconfig: IRouteConfig,
+        private titleBadges: ITitleBadges,
+        private common: ICommon) {
         //init settings
         this.setSpinner();
         this.setActiveMenuListener();
-        this.setTitleBadgesListener();
-        this.setDebugPanel();
         //initial vars
         if (config.homePageOptions) {
             this.bgImageUrl = config.homePageOptions.imageUri &&
@@ -66,35 +67,15 @@ class ShellController {
         }
         $rootScope.appTitle = '';
         $rootScope.forms = {};
-        $scope.supportedLanguages = this.config.supportedLanguages;
-        $scope.currentLanguage = localization.currentLanguage;
-        $scope.currentUser = security.currentUser;
-        $scope.currentCompany = security.currentCompany;
-        $scope.authorizedCompanies = securityConfig.authorizedCompanies;
-        if (securityConfig.avatarUri)
-            $scope.avatarUri = securityConfig.avatarUri;
+        this.isMobileOrTablet = common.isMobileOrTablet();
+        this.currentYear = (new Date()).getFullYear();
     }
     //#endregion
 
     //#region Shell Methods
     /**
-     * Set debug panel visibility
-     */
-    private setDebugPanel(): void {
-        this.$scope.enableDebugPanel = this.config.debugMode && window.__globalEnvironment.showModelDebugPanel;
-        if (this.$scope.enableDebugPanel) {
-            this.$scope.$on(this.config.eventNames.modelLoaded, (e, model): void => {
-                if (_.isArray(model))
-                    this.$scope.modelInDebug = model;
-                else
-                    this.$scope.modelInDebug = (model as IObserableModel<IBaseCrudModel>).toJson &&
-                        (model as IObserableModel<IBaseCrudModel>).toJson();
-            });
-        }
-    }
-    /**
-   * Set spinner settings
-   */
+    * Set spinner settings
+    */
     private setSpinner() {
         //register main spinner events
         this.$rootScope.$on(this.config.eventNames.ajaxStarted, () => {
@@ -103,28 +84,18 @@ class ShellController {
         this.$rootScope.$on(this.config.eventNames.ajaxFinished, () => {
             this._isBusy = false;
         });
-        //spinner settings
-        this._spinnerOptions = this.constants.controller.DEFAULT_SPINNER_OPTIONS;
     }
     /**
      * Set active menu & app title
      */
     private setActiveMenuListener() {
-        this.$scope.$watch<IHierarchicalMenuItem>(() => this.routing.activeMenu, (menu) => {
-            this._activeMenu = menu;
-            //set app title
-            this.$rootScope.appTitle = menu ? (`${menu.title} - ${this.config.appTitle}`) : this.config.appTitle;
-            //set full screen
-            this.fullScreen = menu && menu.isFullScreen;
-        });
-    }
-    /**
-     * Set title badges
-     */
-    private setTitleBadgesListener() {
-        this.$rootScope.$on(this.config.eventNames.menuChanged, (e: ng.IAngularEvent, menu: IHierarchicalMenuItem) => {
+        this.$scope.$watch<IHierarchicalMenu>(() => this.routing.activeMenu, (menu) => {
+            this.$rootScope.appTitle = menu ? (`${menu.localizedTitle} - ${this.config.appTitle}`) : this.config.appTitle;
             if (this.config.homePageOptions)
                 this.isHomePage = this.$location.url() === this.config.homePageOptions.url;
+            //set viewpot width size
+            this.viewPortClass =
+                (this.config.enableContainerFluid || (menu && menu.isFullScreen)) ? 'container-fluid' : 'container';
         });
     }
     /**
@@ -134,62 +105,45 @@ class ShellController {
         this.routing.reload();
     }
     /**
-     * Change current language
-     * @param $event Event
-     * @param lang Language to be changed to
+     * Quick menu transition
+     * @param quickMenu QuickMenu
      */
-    changeLanguage($event: ng.IAngularEvent, lang: ILanguage) {
-        this.localization.currentLanguage = lang;
-        $event.preventDefault();
+    goQuickmenu(quickMenu: IQuickMenu): void {
+        if (!quickMenu) return;
+        if (quickMenu.url) {
+            this.$window.location.replace(quickMenu.url);
+        } else {
+            this.routing.go(quickMenu.state);
+        }
     }
     /**
-     * Logoff
+     * Shows nav menus & settings modal for small devices
      */
-    logOff(): void {
-        this.dialogs.showConfirm({ message: this.localization.getLocal('rota.cikisonay') }).then((): void => {
-            this.security.logOff();
+    showNavMenu(): void {
+        this.dialogs.showModal({
+            isSideBar: true,
+            windowClass: 'side-nav',
+            viewPortSize: true,
+            absoluteTemplateUrl: this.routeconfig.templates.navmenumobile,
+            controller: 'ProfileModalController',
+            controllerAs: 'profilevm'
         });
     }
     /**
-     * Change selected company
-     * @param companyId
+     * Set Mbf visibility
+     * @description Only visible in main page on mobile device.
      */
-    setCompany(company: ICompany): void {
-        this.caching.sessionStorage.store(this.constants.security.STORAGE_NAME_ROLE_ID, company.roleId);
-        this.caching.sessionStorage.store(this.constants.security.STORAGE_NAME_COMPANY_ID, company.id);
-        //redirect to home page
-        this.$window.location.replace("");
-    }
-    /**
-     * Change profile picture
-     */
-    changeAvatar(): void {
-        if (!this.securityConfig.avatarUploadUri)
-            throw new Error(this.constants.errors.NO_AVATAR_URI_PROVIDED);
-
-        this.dialogs.showFileUpload({
-            allowedExtensions: this.constants.controller.ALLOWED_AVATAR_EXTENSIONS,
-            showImageCroppingArea: true,
-            title: this.localization.getLocal('rota.fotosec'),
-            sendText: this.localization.getLocal('rota.fotodegistir')
-        }).then((file): void => {
-            this.uploader.upload({
-                url: this.securityConfig.avatarUploadUri,
-                method: 'POST',
-                data: { file: (file as ICroppedImageUploadResult).image }
-            }).then((): void => {
-                this.logger.toastr.success({ message: this.localization.getLocal('rota.fotodegistirildi') });
-                this.$window.location.reload();
-            });
-        });
+    isMbfVisible(): boolean {
+        return (!this.isMobileOrTablet || this.isHomePage) &&
+            this.config.enableQuickMenu && this.routing.quickMenus.length > 0;
     }
     //#endregion
 }
 //#endregion
 
 //#region Injection
-ShellController.$inject = ['$rootScope', '$scope', '$location', '$window', 'hotkeys', 'Upload', 'SecurityConfig', 'Routing', 'Config', 'Logger',
-    'TitleBadges', 'Localization', 'Security', 'Dialogs', 'Caching', 'RouteConfig', 'Constants'];
+ShellController.$inject = ['$rootScope', '$scope', '$location', '$window', 'Routing', 'Config',
+    'Dialogs', 'Constants', 'CurrentUser', 'CurrentCompany', 'RouteConfig', 'TitleBadges', 'Common'];
 //#endregion
 
 //#region Register

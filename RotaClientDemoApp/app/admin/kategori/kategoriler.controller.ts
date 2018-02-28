@@ -2,24 +2,25 @@
  * date        : 10/18/2016 10:44:09 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseListController } from "rota/base/baselistcontroller";
-import "./kategori.api"
+import BaseListController from "rota/base/baselistcontroller";
+import { Controller } from "rota/base/decorators";
+
+import { KategoriApi } from "./kategori.api"
 //#endregion
 
 /**
  * Your base list controller.Replace IBaseModel and IBaseModelFilter with your own models
  */
+@Controller<IListPageOptions>({
+    registerName: 'kategorilerController',
+    editState: 'shell.content.kategori',
+    pagingEnabled: false,
+    storeFilterValues: true
+})
 class KategorilerController extends BaseListController<IKategori, IKategoriFilter> {
-
-    kategoriApi: IKategoriApi;
-
-    constructor(bundle: IBundle) {
+    constructor(bundle: IBundle, private kategoriApi: KategoriApi) {
         //configure options for your need
-        super(bundle, {
-            editState: 'shell.content.kategori', pagingEnabled: false,
-            initializeModel: true, storeFilterValues: true
-        });
+        super(bundle);
         this.listPageOptions.listButtonVisibility.deleteSelected = false;
 
         //Neler orneklendi
@@ -56,6 +57,3 @@ class KategorilerController extends BaseListController<IKategori, IKategoriFilte
     }
     //#endregion
 }
-//#region Register
-App.addController("kategorilerController", KategorilerController, "kategoriApi");
-//#endregion

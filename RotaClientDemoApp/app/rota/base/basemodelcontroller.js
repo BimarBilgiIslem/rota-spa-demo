@@ -1,10 +1,21 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-define(["require", "exports", "./basecontroller"], function (require, exports, basecontroller_1) {
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+define(["require", "exports", "tslib", "./basecontroller", "../services/validators.service"], function (require, exports, tslib_1, basecontroller_1, validators_service_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     /**
      * This controller is used for loading the any model data remotely or localy
@@ -15,20 +26,36 @@ define(["require", "exports", "./basecontroller"], function (require, exports, b
      * Model abstraction methods
      */
     var BaseModelController = (function (_super) {
-        __extends(BaseModelController, _super);
+        tslib_1.__extends(BaseModelController, _super);
         //#endregion
         //#region Init
-        function BaseModelController(bundle, options) {
-            _super.call(this, bundle, options);
+        function BaseModelController(bundle) {
+            var _this = _super.call(this, bundle) || this;
+            //options update
+            _this.modelPageOptions.newItemParamName =
+                _this.modelPageOptions.newItemParamName || _this.config.defaultNewItemParamName;
+            _this.modelPageOptions.newItemParamValue =
+                _this.modelPageOptions.newItemParamValue || _this.config.defaultNewItemParamValue;
+            //get new instance of validator service
+            _this.validators = _this.$injector.instantiate(validators_service_1.Validators);
+            _this.validators.controller = _this;
+            return _this;
         }
+        Object.defineProperty(BaseModelController.prototype, "modelPageOptions", {
+            /**
+             * List controller options
+             */
+            get: function () { return this.options; },
+            enumerable: true,
+            configurable: true
+        });
         /**
         * Update bundle
         * @param bundle IBundle
         */
         BaseModelController.prototype.initBundle = function (bundle) {
             _super.prototype.initBundle.call(this, bundle);
-            this.$q = bundle.systemBundles['$q'];
-            this.$http = bundle.systemBundles['$http'];
+            this.$http = bundle.services['$http'];
         };
         /**
          * Loaded model method triggered at last
@@ -49,7 +76,7 @@ define(["require", "exports", "./basecontroller"], function (require, exports, b
          * Overridable model definition method
          * @param modelFilter Optional Model filter
          */
-        BaseModelController.prototype.defineModel = function (modelFilter) {
+        BaseModelController.prototype.chooseModelSource = function (modelFilter) {
             return this.getModel(modelFilter);
         };
         /**
@@ -59,51 +86,30 @@ define(["require", "exports", "./basecontroller"], function (require, exports, b
         BaseModelController.prototype.initModel = function (modelFilter) {
             var _this = this;
             var d = this.$q.defer();
-            var defineModelResult = this.defineModel(modelFilter);
-            var processModel = function (model) {
-                //call modelloaded event
-                _this.loadedModel(_this._model = _this.setModel(model));
-                d.resolve(model);
-            };
-            if (this.common.isPromise(defineModelResult)) {
+            var defineModelResult = this.chooseModelSource(modelFilter);
+            if (this.common.isAssigned(defineModelResult)) {
                 defineModelResult.then(function (data) {
-                    processModel(data);
+                    //call setModel
+                    _this._model = _this.setModel(data);
+                    //call loadedModel
+                    _this.loadedModel(_this._model);
+                    d.resolve(data);
                 }, function (reason) {
-                    //TODO: can be changed depending on server excepion response
-                    //this.errorModel(reason.data || reason);
                     d.reject(reason);
                 });
             }
             else {
-                processModel(defineModelResult);
+                d.reject("model data is missing");
             }
             return this.modelPromise = d.promise;
         };
         /**
-         * Process chainable thenable functions
-         * @param pipeline Thenable functions
-         * @param params Optional parameters
+         * this method is called from decorator with all injections are available
+         * initModel is called as default
          */
-        BaseModelController.prototype.initParsers = function (pipeline) {
-            var _this = this;
-            var params = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                params[_i - 1] = arguments[_i];
-            }
-            var result = this.common.promise();
-            //iterate pipeline methods
-            for (var i = 0; i < pipeline.length; i++) {
-                result = (function (promise, method) {
-                    return promise.then(function (response) {
-                        response && params.push(response);
-                        if (method) {
-                            return method.apply(_this, params);
-                        }
-                        return params;
-                    });
-                })(result, pipeline[i]);
-            }
-            return result;
+        BaseModelController.prototype.initController = function () {
+            if (this.modelPageOptions.initializeModel)
+                this.initModel();
         };
         //#endregion
         //#region BaseController
@@ -114,8 +120,8 @@ define(["require", "exports", "./basecontroller"], function (require, exports, b
             _super.prototype.destroy.call(this);
             delete this._model;
         };
-        BaseModelController.injects = basecontroller_1.BaseController.injects.concat(['$q', '$http']);
+        BaseModelController.injects = basecontroller_1.default.injects.concat(['$http']);
         return BaseModelController;
-    }(basecontroller_1.BaseController));
-    exports.BaseModelController = BaseModelController;
+    }(basecontroller_1.default));
+    exports.default = BaseModelController;
 });

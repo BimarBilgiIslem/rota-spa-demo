@@ -1,13 +1,32 @@
-﻿//#region Imports
-import { BaseModelController } from './basemodelcontroller';
-import { ObserableModel } from "./obserablemodel";
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
+import BaseModelController from './basemodelcontroller';
+import ObserableModel from "./obserablemodel";
 //#endregion
 /**
  * Base Modal controller
  */
-class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelController<TModel>
-    implements IBaseModalController {
+class BaseModalController<TModel extends IBaseModel, TParams = any> extends BaseModelController<TModel>{
     //#region Statics,Members,Props
+    private static readonly defaultOptions: IModalPageOptions = {
+        registerName: null,
+        initializeModel: true
+    }
     static injects = BaseModelController.injects.concat(['$uibModalInstance', 'instanceOptions']);
     /**
      * Modal instance
@@ -21,8 +40,8 @@ class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelContro
     * Model object
     * @returns {TModel}
     */
-    get model(): TModel & IObserableModel<TModel> { return this._model as TModel & IObserableModel<TModel>; }
-    set model(value: TModel & IObserableModel<TModel>) {
+    get model(): TModel { return this._model as TModel; }
+    set model(value: TModel) {
         if (this.isAssigned(value)) {
             this._model = value;
         }
@@ -31,9 +50,19 @@ class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelContro
      * Modal params
      * @returns {} 
      */
-    get params(): any { return this.instanceOptions.params }
+    get params(): TParams { return this.instanceOptions.params }
+
+    /**
+    * Modal Page options
+    * @returns {IModalPageOptions} 
+    */
+    get modalPageOptions(): IModalPageOptions { return this.options as IModalPageOptions }
     //#endregion
 
+    constructor(bundle: IBundle) {
+        //call base constructor
+        super(bundle);
+    }
     //#region InjcetableObject
     /**
     * Update bundle
@@ -41,30 +70,31 @@ class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelContro
     */
     initBundle(bundle: IBundle): void {
         super.initBundle(bundle);
-        this.$uibModalInstance = bundle.systemBundles["$uibmodalinstance"];
-        this.instanceOptions = bundle.systemBundles["instanceoptions"] || {};
-        //Inject optional custom services if any
-        if (this.instanceOptions.services) {
-            this.instanceOptions.services.forEach((service): void => {
-                this.defineService(service, this.$injector.get(service));
-            });
-        }
-    }
-    //#endregion
-
-    //#region Init
-    constructor(bundle: IBundle, options?: IModalPageOptions) {
-        super(bundle, options);
-
-        const modalPageOptions = this.common.extend<IModalPageOptions>({ initializeModel: true }, options);
-
-        if (modalPageOptions.initializeModel) {
-            this.initModel();
-        }
+        this.$uibModalInstance = bundle.services["$uibmodalinstance"];
+        this.instanceOptions = bundle.services["instanceoptions"] || {};
     }
     //#endregion
 
     //#region Modal 
+    /**
+    * Validation for modals
+    */
+    applyValidatitons(): angular.IPromise<IParserException> {
+        const validateResult = super.applyValidatitons();
+        validateResult.catch((err: IParserException) => {
+            this.logger.toastr.warn({ message: err.message, title: err.title });
+        });
+        return validateResult;
+    }
+    /**
+     * Close modal if validation success
+     * @param data Result
+     */
+    ok(data: any): void {
+        this.applyValidatitons().then(() => {
+            this.modalResult(data);
+        });
+    }
     /**
      * Close modal with result
      * @param data Result
@@ -75,9 +105,11 @@ class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelContro
     /**
      * Close modal with dismiss
      */
-    closeModal(): void {
-        this.model.revertOriginal();
-        this.$uibModalInstance.dismiss(this.model);
+    closeModal(reason?: any): void {
+        if (this.common.isObserableModel(this.model)) {
+            this.model.revertOriginal();
+        }
+        this.$uibModalInstance.dismiss(reason || this.model);
     }
     //#endregion
 
@@ -85,20 +117,23 @@ class BaseModalController<TModel extends IBaseCrudModel> extends BaseModelContro
     /**
      * Get model
      */
-    getModel(): TModel {
-        return this.instanceOptions.model;
+    getModel(): ng.IPromise<TModel> {
+        return this.common.promise(this.instanceOptions.model);
     }
     /**
      * Convert model to obserable 
      * @param model Literal model
      */
-    setModel(model: TModel): TModel & IObserableModel<TModel> {
-        if (!(model instanceof ObserableModel)) {
-            return <any>new ObserableModel<TModel>(model);
+    setModel(model: TModel): TModel {
+        if (this.common.isObserableModel(model)) {
+            return model as any;
         }
-        return <any>model;
+        if (!(this.instanceOptions.convertToObserableModel === false)) {
+            return new ObserableModel(model) as any;
+        }
+        return model as any;
     }
     //#endregion
 }
-
-export { BaseModalController }
+//Exports
+export default BaseModalController

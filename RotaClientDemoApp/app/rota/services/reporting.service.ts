@@ -1,4 +1,20 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 import * as moment from "moment";
 //#endregion
 
@@ -8,9 +24,11 @@ import * as moment from "moment";
  */
 class Reporting implements IReporting {
     serviceName = 'Reporting Service';
+    static injectionName = "Reporting";
 
-    static $inject = ['$http', '$q', 'Routing', 'Config', 'Common', 'Localization', 'Dialogs', 'Logger', 'Constants'];
+    static $inject = ['$rootScope', '$http', '$q', 'Routing', 'Config', 'Common', 'Localization', 'Dialogs', 'Logger', 'Constants'];
     constructor(
+        private $rootScope: IRotaRootScope,
         private $http: ng.IHttpService,
         private $q: ng.IQService,
         private routing: IRouting,
@@ -20,8 +38,10 @@ class Reporting implements IReporting {
         private dialogs: IDialogs,
         private logger: ILogger,
         private constants: IConstants) {
-        if (!config.reportControllerUrl) throw new Error(this.constants.errors.NO_REPORT_URL_PROVIDED);
-        if (!config.reportViewerUrl) throw new Error(this.constants.errors.NO_REPORT_VIEWER_URL_PROVIDED);
+        if (!config.reportControllerUrl)
+            this.logger.console.warn({ message: this.constants.errors.NO_REPORT_URL_PROVIDED });
+        if (!config.reportViewerUrl)
+            this.logger.console.warn({ message: this.constants.errors.NO_REPORT_VIEWER_URL_PROVIDED });
     }
     /**
      * Convert literak filter obj to ReportParams array     
@@ -46,58 +66,30 @@ class Reporting implements IReporting {
      * Export/Downlaod report as specified mimetype
      * @param options Report generate options
      */
-    downloadReport<TReportFilter extends IBaseReportFilter>(options: IReportDownloadOptions<TReportFilter>): ng.IPromise<any> {
+    downloadReport<TReportFilter extends IBaseReportFilter>(options: IReportDownloadOptions<TReportFilter>): void {
         //extend defaults
-        options = angular.extend({ reportExportType: ReportExportTypes.Pdf, reportDispositonType: ReportDispositonTypes.Attachment }, options);
-        //get url
-        const generateReportUrl = this.config.reportControllerUrl + "/" + this.constants.server.ACTION_NAME_GENERATE_REPORT +
-            "?reportName=" + options.reportName + "&reportExportType=" + options.reportExportType;
-        //convert filter to array
+        options = angular.extend({
+            reportExportType: ReportExportTypes.Pdf,
+            reportDispositonType: ReportDispositonTypes.Attachment
+        }, options);
+        //get url and convert filter to report params
+        const reportEndpoint = `${this.config.reportControllerUrl}/${this.constants.server.ACTION_NAME_GET_REPORT}`;
         const reportParams = this.mapReportParams(options.filter);
-        //generate report
-        const generateReportPromise = this.$http.post(generateReportUrl, reportParams);
-
-        return generateReportPromise.then(() => {
-            const getReportUrl = this.config.reportControllerUrl + "/" + this.constants.server.ACTION_NAME_GET_REPORT +
-                "?displayReportName=" + options.displayReportName + "&reportDispositonType=" + options.reportDispositonType;
-            switch (options.reportDispositonType) {
-                case ReportDispositonTypes.Attachment:
-                    window.location.replace(getReportUrl);
-                    break;
-                case ReportDispositonTypes.Inline:
-                    window.open(getReportUrl, null, 'height=950, width=950, status=yes, resizable=yes, scrollbars=yes,' +
-                        ' toolbar=no, location=no, menubar=no left=0, top=10');
-                    break;
-            }
-            this.logger.console.log({ message: options.reportName + ' report downloaded/viewed' });
-        });
-    }
-    /**
-     * Show ReportViewer
-     * @param reportName Actual SSRS Report Name
-     * @param options Report Options
-     */
-    showReport<TReportFilter extends IBaseReportFilter>(options: IReportViewerOptions<TReportFilter>): ng.IPromise<any> {
-        let paramResponsePromise;
-
-        if (!_.isEmpty(options.filter)) {
-            //convert filter to array params
-            const reportParams = this.mapReportParams(options.filter);
-            paramResponsePromise = this.$http.post(this.config.reportControllerUrl + "/" +
-                this.constants.server.ACTION_NAME_SET_REPORT_FILTERS, reportParams);
-        }
-
-        return this.common.makePromise(paramResponsePromise).then(() => {
-            this.logger.console.log({ message: options.reportName + ' report opened in reportviewer' });
-            return this.dialogs.showReport({
-                message: options.message,
-                title: options.title,
-                okText: options.okText,
-                windowClass: options.windowClass,
-                reportName: options.reportName,
-                reportViewerUrl: this.config.reportViewerUrl
+        //get report
+        this.$rootScope.$broadcast(this.constants.events.EVENT_START_FILEDOWNLOAD,
+            {
+                url: reportEndpoint,
+                filter: {
+                    options: {
+                        reportName: options.reportName,
+                        displayReportName: options.displayReportName,
+                        reportExportType: options.reportExportType,
+                        reportDispositonType: options.reportDispositonType
+                    }, filter: { reportParams }
+                },
+                inline: options.reportDispositonType === ReportDispositonTypes.Inline
             });
-        });
+        this.logger.console.log({ message: options.reportName + ' report downloaded' });
     }
 }
 
@@ -105,7 +97,7 @@ class Reporting implements IReporting {
 
 //#region Register
 var module: ng.IModule = angular.module('rota.services.reporting', []);
-module.service('Reporting', Reporting);
+module.service(Reporting.injectionName, Reporting);
 //#endregion
 
 export { Reporting }

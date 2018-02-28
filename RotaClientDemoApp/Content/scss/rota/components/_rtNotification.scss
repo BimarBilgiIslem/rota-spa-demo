@@ -1,0 +1,58 @@
+﻿.rt-notifications {
+    .notifications-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        min-height: 60px;
+        line-height: 60px;
+        width: 100%;
+        z-index: ($zindex-navbar-fixed + 10);
+    }
+
+    .notification {
+        position: relative;
+        @include fadeInDown();
+        text-align: center;
+        font-size: 18px;
+        color: #fff;
+    }
+
+    .message {
+        padding: 0 12px;
+    }
+
+    .danger {
+        @extend .notification;
+        background-color: $alert-danger-bg;
+        border-bottom: 1px solid $alert-danger-border;
+        color: $alert-danger-text;
+    }
+
+    .success {
+        @extend .notification;
+        background-color: $alert-success-bg;
+        border-bottom: 1px solid $alert-success-border;
+        color: $alert-success-text;
+    }
+
+    .warning {
+        @extend .notification;
+        background-color: $alert-warning-bg;
+        border-bottom: 1px solid $alert-warning-border;
+        color: $alert-warning-text;
+    }
+
+    .info {
+        @extend .notification;
+        background-color: $alert-info-bg;
+        border-bottom: 1px solid $alert-info-border;
+        color: $alert-info-text;
+    }
+
+    .close-click {
+        font-size: 12px;
+        cursor: pointer;
+        padding: 10px;
+        margin: 0 auto;
+    }
+}

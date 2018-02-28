@@ -1,4 +1,20 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 import { Localization } from './localization.service';
 import "./logger.config";
 import '../config/config';
@@ -19,41 +35,51 @@ class Toastr implements IToastr {
      * Toast log message
      * @param toast Log
      */
-    log(toast: ILog): void {
+    log(toast: ILog): IRemoveLog {
         toastr.options.timeOut = toast.isSticky ? 0 : this.loggerconfig.timeOuts[LogType.Debug];
-        this.info(toast);
+        return this.info(toast);
     }
     /**
      * Toast error message
      * @param toast Log
      */
-    error(toast: ILog): void {
+    error(toast: ILog): IRemoveLog {
         toastr.options.timeOut = toast.isSticky ? 0 : this.loggerconfig.timeOuts[LogType.Error];
-        toastr.error(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Error]);
+        const elem = toastr.error(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Error]);
+        return () => { toastr.clear(elem); }
     }
     /**
      * Toast warn message
      * @param toast Log
      */
-    warn(toast: ILog): void {
+    warn(toast: ILog): IRemoveLog {
         toastr.options.timeOut = toast.isSticky ? 0 : this.loggerconfig.timeOuts[LogType.Warn];
-        toastr.warning(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Warn]);
+        const elem = toastr.warning(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Warn]);
+        return () => { toastr.clear(elem); }
     }
     /**
      * Toast success message
      * @param toast Log
      */
-    success(toast: ILog): void {
+    success(toast: ILog): IRemoveLog {
         toastr.options.timeOut = toast.isSticky ? 0 : this.loggerconfig.timeOuts[LogType.Success];
-        toastr.success(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Success]);
+        const elem = toastr.success(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Success]);
+        return () => { toastr.clear(elem); }
     }
     /**
      * Toast info message
      * @param toast Log
      */
-    info(toast: ILog): void {
+    info(toast: ILog): IRemoveLog {
         toastr.options.timeOut = toast.isSticky ? 0 : this.loggerconfig.timeOuts[LogType.Info];
-        toastr.info(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Info]);
+        const elem = toastr.info(toast.message, toast.title || this.loggerconfig.defaultTitles[LogType.Info]);
+        return () => { toastr.clear(elem); }
+    }
+    /**
+     * Clear all toasts
+     */
+    clearAll(): void {
+        toastr.clear();
     }
 }
 /**
@@ -65,67 +91,81 @@ class Notification implements INotification {
      */
     notifications: INotify[];
 
-    constructor(private loggerconfig: ILoggerConfig, private $document: duScroll.IDocumentService) {
+    constructor(private loggerconfig: ILoggerConfig,
+        private $document: duScroll.IDocumentService,
+        private $timeout: ng.ITimeoutService) {
         this.notifications = [];
     }
     /**
      * Notify log message
      * @param notify Notify message
      */
-    log(notify: ILog): void {
-        this.info(notify);
+    log(notify: INotifyLog): IRemoveLog {
+        return this.info(notify);
     }
     /**
      * Notify info message
      * @param notify Notify message
      */
-    info(notify: ILog): INotify {
-        return this.addNotification({
+    info(notify: INotifyLog): IRemoveLog {
+        const result = this.addNotification({
             title: notify.title || this.loggerconfig.defaultTitles[LogType.Info],
             message: notify.message,
-            icon: 'info',
+            icon: 'info-circle',
             style: 'info',
-            isSticky: notify.isSticky
+            isSticky: notify.isSticky,
+            notificationLayout: notify.notificationLayout || NotificationLayout.Content,
+            autoHideDelay: notify.autoHideDelay
         });
+        return () => { this.removeNotification(result); }
     }
     /**
      * Notify error message
      * @param notify Notify message
      */
-    error(notify: ILog): INotify {
-        return this.addNotification({
+    error(notify: INotifyLog): IRemoveLog {
+        const result = this.addNotification({
             title: notify.title || this.loggerconfig.defaultTitles[LogType.Error],
             message: notify.message,
             icon: 'times',
             style: 'danger',
-            isSticky: notify.isSticky
+            isSticky: notify.isSticky,
+            notificationLayout: notify.notificationLayout || NotificationLayout.Content,
+            autoHideDelay: notify.autoHideDelay
         });
+        return () => { this.removeNotification(result); }
     }
     /**
      * Notify warn message
      * @param notify Notify message
      */
-    warn(notify: ILog): INotify {
-        return this.addNotification({
+    warn(notify: INotifyLog): IRemoveLog {
+        const result = this.addNotification({
             title: notify.title || this.loggerconfig.defaultTitles[LogType.Warn],
             message: notify.message,
             icon: 'warning',
             style: 'warning',
-            isSticky: notify.isSticky
+            isSticky: notify.isSticky,
+            notificationLayout: notify.notificationLayout || NotificationLayout.Content,
+            autoHideDelay: notify.autoHideDelay
         });
+        return () => { this.removeNotification(result); }
     }
     /**
      * Notify success message
      * @param notify Notify message
      */
-    success(notify: ILog): INotify {
-        return this.addNotification({
+    success(notify: INotifyLog): IRemoveLog {
+        const result = this.addNotification({
             title: notify.title || this.loggerconfig.defaultTitles[LogType.Success],
             message: notify.message,
             icon: 'check-square-o',
             style: 'success',
-            isSticky: notify.isSticky
+            isSticky: notify.isSticky,
+            notificationLayout: notify.notificationLayout || NotificationLayout.Content,
+            autoHideDelay: notify.autoHideDelay
         });
+        return () => { this.removeNotification(result); }
     }
     /**
      * Add notification
@@ -135,6 +175,10 @@ class Notification implements INotification {
     private addNotification(notify: INotify): INotify {
         //TODO:sce sanitize message and text ?
         this.notifications.push(notify);
+        //autohide 
+        if (notify.autoHideDelay) {
+            this.$timeout(() => this.removeNotification(notify), notify.autoHideDelay);
+        }
         //Scroll up to top to make notifications visible
         this.$document.duScrollTop && this.$document.duScrollTop(0, 500);
         return notify;
@@ -154,6 +198,12 @@ class Notification implements INotification {
         this.notifications.delete((item) => {
             return includeSticky || !item.isSticky;
         });
+    }
+    /**
+    * Clear all notifications
+    */
+    clearAll(): void {
+        this.removeAll(true);
     }
 }
 /**
@@ -185,6 +235,7 @@ class Console implements IConsole {
      */
     log(log: ILog): void {
         this.logit('log', this.formatLog(log), log.data);
+
     }
     /**
      * Info
@@ -251,8 +302,13 @@ class Console implements IConsole {
             this.logit('error', 'console.timeEnd not supported');
         }
     }
+    /**
+    * Clear console
+    */
+    clearAll(): void {
+        console.clear();
+    }
 }
-
 //#endregion
 
 //#region Logger Service
@@ -262,31 +318,35 @@ class Console implements IConsole {
 class Logger implements ILogger {
     //#region Props
     serviceName = "Logger Service";
-    private logServices: { [index: number]: IBaseLogger };
+    static injectionName = "Logger";
+
+    private logServices: { [index: number]: IBaseLogger<ILog> };
     //Services
     /**
      * Console Service
      * @returns {} Console Service
      */
-    get console(): IBaseLogger { return this.logServices[LogServices.Console]; }
+    get console(): IConsole { return this.logServices[LogServices.Console] as IConsole; }
     /**
      * Notification Service
      * @returns {} Notification Service
      */
-    get notification(): IBaseLogger { return this.logServices[LogServices.Notification]; }
+    get notification(): INotification { return this.logServices[LogServices.Notification] as INotification; }
     /**
      * Toastr service
      * @returns {} Toastr service
      */
-    get toastr(): IBaseLogger { return this.logServices[LogServices.Toastr]; }
+    get toastr(): IToastr { return this.logServices[LogServices.Toastr] as IToastr; }
     //#endregion
-    static $inject = ['$rootScope', '$log', '$document', 'Config', 'LoggerConfig', 'Localization'];
-    constructor($rootScope: ng.IRootScopeService,
-        $log: ng.ILogService,
-        $document: duScroll.IDocumentService,
-        config: IMainConfig,
-        loggerconfig: ILoggerConfig,
-        localization: ILocalization) {
+    static $inject = ['$rootScope', '$log', '$document', '$timeout', 'Config', 'LoggerConfig', 'Localization', 'Constants'];
+    constructor(private $rootScope: ng.IRootScopeService,
+        private $log: ng.ILogService,
+        private $document: duScroll.IDocumentService,
+        private $timeout: ng.ITimeoutService,
+        private config: IMainConfig,
+        private loggerconfig: ILoggerConfig,
+        private localization: ILocalization,
+        private constants: IConstants) {
         loggerconfig.defaultTitles[LogType.Info] = localization.getLocal('rota.titleinfo');
         loggerconfig.defaultTitles[LogType.Warn] = localization.getLocal('rota.titlewarn');
         loggerconfig.defaultTitles[LogType.Success] = localization.getLocal('rota.titlesuccess');
@@ -295,7 +355,16 @@ class Logger implements ILogger {
         //register services
         this.logServices = {};
         this.logServices[LogServices.Console] = new Console($log, config);
-        this.logServices[LogServices.Notification] = new Notification(loggerconfig, $document);
+        this.logServices[LogServices.Notification] = new Notification(loggerconfig, $document, $timeout);
+        //clear notifications when state changes for only menu states
+        $rootScope.$on(constants.events.EVENT_STATE_CHANGE_SUCCESS,
+            (event: ng.IAngularEvent, toState: IRotaState, toParams: ng.ui.IStateParamsService, fromState: IRotaState) => {
+                //remove all notifications on condition that state is not nested or reload in process
+                if (!toState.isNestedState || toState.name === fromState.name) {
+                    (this.logServices[LogServices.Notification] as INotification).removeAll();
+                }
+            });
+
         this.logServices[LogServices.Toastr] = new Toastr(loggerconfig);
     }
 }
@@ -304,7 +373,7 @@ class Logger implements ILogger {
 
 //#region Register
 var module: ng.IModule = angular.module('rota.services.log', ['rota.services.log.config', 'rota.config']);
-module.service('Logger', Logger);
+module.service(Logger.injectionName, Logger);
 //Config 
 module.config([
     '$logProvider', 'ConfigProvider',

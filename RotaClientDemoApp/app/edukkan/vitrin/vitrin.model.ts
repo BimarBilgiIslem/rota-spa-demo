@@ -4,8 +4,3 @@
     adet: number;
 }> {
 }
-
-interface IVitrinApi {
-    sepetim: ISepetim;
-    sepeteEkle(urun: IUrun, adet: number): void;
-}

@@ -1,8 +1,24 @@
+/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 define(["require", "exports"], function (require, exports) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     //#endregion
     //#region Directive
-    function buttonDirective(hotkeys, localization, common) {
+    function buttonDirective($document, hotkeys, localization, common) {
         var pendingText = localization.getLocal('rota.lutfenbekleyiniz');
         function compile(tElement, tAttrs) {
             var disabledAttr = 'isBusy';
@@ -10,7 +26,7 @@ define(["require", "exports"], function (require, exports) {
                 disabledAttr += " || (" + tAttrs['ngDisabled'] + ")";
             }
             tAttrs.$set('ngDisabled', disabledAttr);
-            return function (scope, element, attrs) {
+            return function (scope, element, attrs, formCnt) {
                 //get original items
                 var orjText = scope.text;
                 var orjIcon = scope.icon;
@@ -42,6 +58,11 @@ define(["require", "exports"], function (require, exports) {
                 };
                 var endAjax = function () {
                     setButtonAttrs({ caption: orjText, icon: orjIcon, disable: false });
+                    //scroll if elem is defined
+                    if (scope.elemToScroll && formCnt && formCnt.$valid) {
+                        var elem = document.getElementById(scope.elemToScroll);
+                        $document.duScrollToElement(angular.element(elem), 0, 750);
+                    }
                 };
                 scope.doclick = function (e) {
                     var result = scope.click(e);
@@ -57,13 +78,15 @@ define(["require", "exports"], function (require, exports) {
         var directive = {
             restrict: 'AE',
             replace: true,
+            require: '?^form',
             scope: {
                 text: '@',
                 textI18n: '@',
                 icon: '@',
                 color: '@',
                 click: '&',
-                size: '@'
+                size: '@',
+                elemToScroll: '@'
             },
             templateUrl: function (elem, attr) { return (angular.isDefined(attr.iconToRight) ?
                 'rota/rtbutton-r.tpl.html' : 'rota/rtbutton-l.tpl.html'); },
@@ -72,7 +95,7 @@ define(["require", "exports"], function (require, exports) {
         return directive;
     }
     exports.buttonDirective = buttonDirective;
-    buttonDirective.$inject = ['hotkeys', 'Localization', 'Common'];
+    buttonDirective.$inject = ['$document', 'hotkeys', 'Localization', 'Common'];
     //#endregion
     //#region Register
     angular.module('rota.directives.rtbutton', [])
@@ -89,5 +112,4 @@ define(["require", "exports"], function (require, exports) {
                 '{{caption}}</span></button>');
         }
     ]);
-    //#endregion
 });

@@ -3,9 +3,11 @@
 //vendor core libs
 @import '../vendor/bootstrap.scss';
 @import '../vendor/bourbon.scss';
+@import "../vendor/animate/animate";
+@import "../vendor/awesome-bootstrap-checkbox";
 //sections
-@import 'sections/header.scss';
 @import "sections/content";
+@import "sections/sub-header";
 //libraries
 @import "libraries/mixins";
 @import 'libraries/vendor-overwrite.scss';
@@ -20,25 +22,30 @@
 @import "components/rtSelect";
 @import "components/rtTabs";
 @import "components/rtMultFileUpload";
-@import "components/subDropDown";
-@import "components/breadcrumbs";
-@import "components/badges";
+@import "components/rtNotification";
+@import "components/rtNavMenu";
+@import "components/rtNavMenuMobile";
 @import "components/buttons";
 @import "components/rtDateRange";
 @import "components/contextMenu";
 @import "components/rtTree";
 @import "components/modal";
 @import "components/rtCallout";
+@import "components/avatar";
+@import "components/rtNumber";
+@import "components/rtNavProfile";
+@import "components/rtInfo";
+@import "components/rtPagePreview";
+@import "components/rtFileUpload";
 /************** VENDOR CSS URL IMPORTS ******************/
 @import "vendor-css/font-awesome.min.css";
 @import "vendor-css/toastr.min.css";
 @import "vendor-css/hotkeys.min.css";
 @import "vendor-css/select.min.css";
-/*@import "vendor-css/select2_custom.css";*/
 @import "vendor-css/datetimepicker.css";
 @import "vendor-css/ui-grid.min.css";
-@import "vendor-css/awesome-bootstrap-checkbox.css";
 @import "vendor-css/mfb.min.css";
 @import "vendor-css/ng-img-crop.css";
 @import "vendor-css/ivh-treeview.css";
 @import "vendor-css/ivh-treeview-theme-basic.css";
+@import "vendor-css/ui-layout.css";

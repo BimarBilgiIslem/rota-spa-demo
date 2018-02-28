@@ -1,7 +1,7 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 
-namespace RotaClientDemoApp
+namespace RotaSPA_Client
 {
     public partial class Startup
     {
@@ -9,13 +9,14 @@ namespace RotaClientDemoApp
         {
             AreaRegistration.RegisterAllAreas();
 
-            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
+            routes.IgnoreRoute("{resource}.axd/{*pathInfo}");            
+                
             routes.MapRoute(
+                namespaces: new[] { "RotaSPA_Client.Controllers" },
                 name: "Default",
-                url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
-                );
+                url: "{*anything}", 
+                defaults: new { controller = "Home", action = "Index" }
+            );
         }
     }
 }

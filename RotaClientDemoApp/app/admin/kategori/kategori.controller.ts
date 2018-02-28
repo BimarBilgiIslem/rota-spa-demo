@@ -2,24 +2,27 @@
  * date        : 10/18/2016 10:44:29 AM 
  */
 //#region Imports
-import { App } from "rota/config/app";
-import { BaseCrudController } from "rota/base/basecrudcontroller";
-import "./kategori.api"
+import BaseCrudController from "rota/base/basecrudcontroller";
+import { Controller } from "rota/base/decorators";
+
+import { KategoriApi } from "./kategori.api"
 //#endregion
 
 /**
  * Your base crud controller.Replace IBaseCrudModel with your own model
  */
+@Controller<ICrudPageOptions>({
+    registerName: 'kategoriController'
+})
 class KategoriController extends BaseCrudController<IKategori> {
-    kategoriApi: IKategoriApi;
     kategoriAdi: string;
 
     currentUser: IUser;
     currentCompany: ICompany;
 
-    constructor(bundle: IBundle) {
+    constructor(bundle: IBundle, private kategoriApi: KategoriApi) {
         //configure options for your need
-        super(bundle, {});
+        super(bundle);
         this.crudPageOptions.crudButtonsVisibility.deleteButton = false;
     }
 
@@ -29,7 +32,7 @@ class KategoriController extends BaseCrudController<IKategori> {
         return this.kategoriApi.getById(modelFilter.id);
     }
 
-    saveModel(options: ISaveOptions): ng.IPromise<ICrudServerResponseData | IParserException> {
+    saveModel(options: ISaveOptions): ng.IPromise<ICrudServerResponseData> {
         //save your model
         return this.kategoriApi.kategoriKaydet(options.jsonModel as IKategori);
     }
@@ -41,7 +44,7 @@ class KategoriController extends BaseCrudController<IKategori> {
     //#endregion
 
     kategoriKontrol(): IP<any> {
-        return this.kategoriApi.getList({ kategoriAdi: this.model.kategoriAdi })
+        return this.kategoriApi.getList<IKategoriFilter>({ kategoriAdi: this.model.kategoriAdi })
             .then((kategorier) => {
                 if (kategorier.length > 0) {
                     return this.common
@@ -54,12 +57,4 @@ class KategoriController extends BaseCrudController<IKategori> {
     afterSaveModel(options: ISaveOptions): void {
         this.routing.go('shell.content.kategoriler');
     }
-
-    //beforeSaveModel(options: ISaveOptions): angular.IPromise<any> {
-    //    return this.kategoriKontrol();
-
-    //}
 }
-//#region Register
-App.addController("kategoriController", KategoriController, "kategoriApi", "CurrentUser", "CurrentCompany");
-//#endregion

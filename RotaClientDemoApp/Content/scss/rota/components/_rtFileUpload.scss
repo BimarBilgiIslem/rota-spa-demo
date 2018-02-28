@@ -1,0 +1,10 @@
+﻿.rt-file-upload {
+    position: relative;
+
+    .progress-wrapper {
+        position: absolute;
+        right: 47px;
+        top: 8px;
+        z-index: 2;
+    }
+}

@@ -1,16 +1,32 @@
-﻿//#region Imports
+﻿/*
+ * Copyright 2017 Bimar Bilgi İşlem A.Ş.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//#region Imports
 //deps - resource files
 import * as rotaresource from 'i18n!rota-resources/nls/resources';
 import * as appresource from 'i18n!app-resources/nls/resources';
 //moment localization
 import 'i18n!rota-resources/nls/moment-lang';
-import * as _ from 'underscore';
 //#endregion
 
 //#region Localization Service
 class Localization implements ILocalization {
     //#region Props
     serviceName = "Localization Service";
+    static injectionName = "Localization";
 
     private _currentLanguage: ILanguage;
     /**
@@ -24,23 +40,29 @@ class Localization implements ILocalization {
      */
     set currentLanguage(value: ILanguage) {
         if (value === this.currentLanguage) return;
-        this.$window.localStorage.setItem(this.constants.localization.ACTIVE_LANG_STORAGE_NAME, value.code);
+
+        if (!this.config.supportedLanguages.any(lang => lang.code === value.code.toLowerCase())) {
+            throw new Error(`'${value.code}' not supported culture.(allowed 'en-us' or 'tr-tr')`);
+        }
+
+        this.$window.localStorage.setItem(this.constants.localization.ACTIVE_LANG_STORAGE_NAME, value.code.toLowerCase());
         this.$window.location.reload();
     }
     //#endregion
 
     //#region Init
-    static $inject = ['$window', '$interpolate', 'Resource', 'Config', 'Constants'];
-    constructor(private $window: ng.IWindowService,
+    static $inject = ['$injector', '$window', '$interpolate', 'Resource', 'Config', 'Constants', 'CurrentUser'];
+    constructor(
+        private $injector: ng.auto.IInjectorService,
+        private $window: ng.IWindowService,
         private $interpolate: ng.IInterpolateService,
         private resources: IResource,
         private config: IMainConfig,
-        private constants: IConstants) {
-        const currentLangCode = $window.localStorage.getItem(constants.localization.ACTIVE_LANG_STORAGE_NAME) ||
-            constants.localization.DEFAULT_LANGUAGE;
-        this._currentLanguage = _.findWhere<ILanguage, ILanguage>(this.config.supportedLanguages, { code: currentLangCode });
+        private constants: IConstants,
+        private currentUser: IUser) {
+        //Init culture 
+        this._currentLanguage = this.config.supportedLanguages.firstOrDefault(lang => lang.code === window.__CULTURE.toLowerCase());
     }
-
     //#endregion
 
     //#region Localization Methods
@@ -99,9 +121,9 @@ class Localization implements ILocalization {
 
 //#region Register
 const module: ng.IModule = angular.module('rota.services.localization', []);
-module.service('Localization', Localization);
+module.service(Localization.injectionName, Localization);
 module.factory('Resource', () => {
-    return angular.extend({}, appresource, rotaresource);
+    return angular.merge({}, rotaresource, appresource);
 });
 //#endregion
 
