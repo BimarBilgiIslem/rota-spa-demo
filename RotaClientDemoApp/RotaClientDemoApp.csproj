@@ -76,6 +76,10 @@
       <HintPath>..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
       <Private>True</Private>
@@ -249,6 +253,7 @@
     <Content Include="app\admin\urun\urunler.html" />
     <Content Include="app\edukkan\vitrin\sepet.html" />
     <Content Include="app\edukkan\vitrin\vitrin.html" />
+    <Content Include="app\es6-promise.min.js" />
     <Content Include="app\resources\nls\en-US\resources.js" />
     <Content Include="app\resources\nls\resources.js" />
     <Content Include="app\resources\nls\tr-tr\resouces.js" />
@@ -572,9 +577,11 @@
     <TypeScriptCompile Include="app\admin\urun\urun.controller.ts" />
     <TypeScriptCompile Include="app\admin\urun\urun.model.ts" />
     <TypeScriptCompile Include="app\admin\urun\urunler.controller.ts" />
+    <TypeScriptCompile Include="app\cookie-manager.ts" />
     <TypeScriptCompile Include="app\edukkan\vitrin\vitrin.api.ts" />
     <TypeScriptCompile Include="app\edukkan\vitrin\vitrin.controller.ts" />
     <TypeScriptCompile Include="app\edukkan\vitrin\vitrin.model.ts" />
+    <TypeScriptCompile Include="app\main.ts" />
     <TypeScriptCompile Include="app\rota\base\baseapi.ts" />
     <TypeScriptCompile Include="app\rota\base\baseconfig.ts" />
     <TypeScriptCompile Include="app\rota\base\basecontroller.ts" />
